@@ -83,6 +83,7 @@ function turnExponentialToFixed(number) {
 		static toString(value) {
 			value=new Decimal(value)
 			if (value.exponent>20||value.exponent<-20) return value.mantissa+'e'+value.exponent
+			var mantissalog=Math.log10(value.mantissa)
 			return value.mantissa*powersof10[indexof0inpowersof10+mantissalog]
 		}
 		
@@ -90,8 +91,35 @@ function turnExponentialToFixed(number) {
 			return Decimal.toString(this)
 		}
 		
-		add(value) {
-			return Decimal.add(this,value)
+		static toPrecision(value,dp) {
+			value=new Decimal(value)
+			if (value.exponent>dp||value.exponent<-dp) return (value.mantissa).toPrecision(dp)+'e'+value.exponent
+			var mantissalog=Math.log10(value.mantissa)
+			return (value.mantissa*powersof10[indexof0inpowersof10+mantissalog]).toPrecision(dp)
+		}
+		
+		toPrecision(dp) {
+			return Decimal.toPrecision(this,dp)
+		}
+		
+		static toFixed(value,dp) {
+			value=new Decimal(value)
+			if (value.exponent>dp||value.exponent<-dp) return (value.mantissa).toFixed(dp)+'e'+value.exponent
+			var mantissalog=Math.log10(value.mantissa)
+			return (value.mantissa*powersof10[indexof0inpowersof10+mantissalog]).toFixed(dp)
+		}
+		
+		toFixed(dp) {
+			return Decimal.toFixed(this,dp)
+		}
+		
+		static toExponential(value,dp) {
+			value=new Decimal(value)
+			return (value.mantissa).toFixed(dp)+'e'+value.exponent
+		}
+		
+		toExponential(dp) {
+			return Decimal.toExponential(this,dp)
 		}
 		
 		static add(value1,value2) {
@@ -310,6 +338,38 @@ function turnExponentialToFixed(number) {
 			return Decimal.ceil(this)
 		}
 		
+		static abs(value) {
+			value=new Decimal(value)
+			if (value.mantissa<0) value.mantissa=-value.mantissa
+			return value
+		}
+		
+		abs() {
+			return Decimal.abs(this)
+		}
+		
+		static min(value1,value2) {
+			value1=new Decimal(value1)
+			value2=new Decimal(value2)
+			if (compareTo(value1,value2)>0) return value2
+			return value1
+		}
+		
+		min(value) {
+			return Decimal.min(this,value)
+		}
+		
+		static max(value1,value2) {
+			value1=new Decimal(value1)
+			value2=new Decimal(value2)
+			if (compareTo(value1,value2)>0) return value1
+			return value2
+		}
+		
+		max(value) {
+			return Decimal.max(this,value)
+		}
+		
 		static compareTo(value1,value2) {
 			value1=Decimal.fromValue(value1)
 			value2=Decimal.fromValue(value2)
@@ -320,6 +380,46 @@ function turnExponentialToFixed(number) {
 		
 		compareTo(value) {
 			return Decimal.compareTo(this,value)
+		}
+		
+		static lt(value1,value2) {
+			return Decimal.compareTo(value1,value2)<0
+		}
+		
+		lt(value) {
+			return Decimal.compareTo(this,value)<0
+		}
+		
+		static lte(value1,value2) {
+			return Decimal.compareTo(value1,value2)<=0
+		}
+		
+		lte(value) {
+			return Decimal.compareTo(this,value)<=0
+		}
+		
+		static eq(value1,value2) {
+			return Decimal.compareTo(value1,value2)==0
+		}
+		
+		eq(value) {
+			return Decimal.compareTo(this,value)==0
+		}
+		
+		static gte(value1,value2) {
+			return Decimal.compareTo(value1,value2)>=0
+		}
+		
+		gte(value) {
+			return Decimal.compareTo(this,value)>=0
+		}
+		
+		static gt(value1,value2) {
+			return Decimal.compareTo(value1,value2)>0
+		}
+		
+		gt(value) {
+			return Decimal.compareTo(this,value)>0
 		}
 		
 		static sumGeometricSeries(start,ratio,length) {
