@@ -42,11 +42,12 @@ function turnExponentialToFixed(number) {
 			} else if (value instanceof Decimal) {
 				return value
 			} else if (value.constructor.name=='v') {
-				return {mantissa:0,exponent:0}
+				return new Decimal(value.toString(),0)
 			} else if (typeof(value)=='string') {
 				var indexOf=value.indexOf('e')
+				if (indexOf==-1&&value.length>308) return Decimal.fromMantissaExponent(value.slice(0,15)*1e-14,value.length-1)
 				if (indexOf==-1) return Decimal.fromMantissaExponent(value,0)
-				return Decimal.fromMantissaExponent(parseFloat(value.slice(0,indexOf)),BigInteger.parseInt(value.slice(indexOf+1,value.length)))
+				return Decimal.fromMantissaExponent(parseFloat(value.slice(0,indexOf)),BigInteger.parseInt(turnExponentialToFixed(value.slice(indexOf+1,value.length))))
 			} else if (typeof(value)=='number') {
 				if (value==Number.POSITIVE_INFINITY) {
 					return {mantissa:1,exponent:EXP_LIMIT}
@@ -139,6 +140,14 @@ function turnExponentialToFixed(number) {
 		}
 		
 		add(value) {
+			return Decimal.add(this,value)
+		}
+		
+		static plus(value1,value2) {
+			return Decimal.add(value1,value2)
+		}
+		
+		plus(value) {
 			return Decimal.add(this,value)
 		}
 		
@@ -240,7 +249,6 @@ function turnExponentialToFixed(number) {
 			if (power<Number.NEGATIVE_INFINITY) return new Decimal(0)
 			if (power>Number.POSITIVE_INFINITY) return new Decimal(Number.POSITIVE_INFINITY)
 			if (value.compareTo(1)==0) return new Decimal(1)
-			if (value.compareTo(10)==0) return Decimal.fromMantissaExponent(1,power)
 			if (power==0) return new Decimal(1)
 			if (power==1) return value
 			if (power>9007199254740992) power=BigInteger.parseInt(turnExponentialToFixed(power))
@@ -428,8 +436,16 @@ function turnExponentialToFixed(number) {
 			return Decimal.compareTo(this,value)>0
 		}
 		
+		static sumArithmeticSeries(start,add,length) {
+			start=new Decimal(start)
+			add=new Decimal(add)
+			return Decimal.mul(start,length).add(Decimal.mul(add,Decimal.sub(length,1)).mul(length).div(2))
+		}
+		
 		static sumGeometricSeries(start,ratio,length) {
-			return Decimal.pow(ratio,length).sub(1).div(Decimal.sub(ratio,1)).times(start)
+			start=new Decimal(start)
+			ratio=new Decimal(ratio)
+			return Decimal.pow(ratio,length).sub(1).div(Decimal.sub(ratio,1)).mul(start)
 		}
 		
 		valueOf() { return this.toString(); }
