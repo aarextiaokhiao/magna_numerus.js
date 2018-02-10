@@ -11,7 +11,7 @@
 		static fromValue(value) {
 			if (value==null) {
 				return {mantissa:0,exponent:0}
-			} if (value instanceof Decimal) {
+			} else if (value instanceof Decimal) {
 				return value
 			} else if (value.constructor.name=='v') {
 				return {mantissa:0,exponent:0}
@@ -38,11 +38,26 @@
 		}
 		
 		static fromMantissaExponent(mantissa,exponent) {
-			var value=new Decimal()
+			var value=new Decimal(0)
+			if (mantissa==0) return value
 			var mantissalog=Math.floor(Math.log10(Math.abs(mantissa)))
 			value.mantissa=mantissa/Math.pow(10,mantissalog)
 			value.exponent=BigInteger.add(exponent,mantissalog)
 			return value
+		}
+		
+		static toString(value) {
+			value=new Decimal(value)
+			if (value.exponent>20||value.exponent<-20) return value.mantissa+'e'+value.exponent
+			return value.mantissa*Math.pow(10,value.exponent)
+		}
+		
+		toString() {
+			return Decimal.toString(this)
+		}
+		
+		add(value) {
+			return Decimal.add(this,value)
 		}
 		
 		static add(value1,value2) {
@@ -65,6 +80,16 @@
 		
 		sub(value) {
 			return Decimal.add(this,Decimal.negate(value))
+		}
+		
+		static negate(value) {
+			value=new Decimal(value)
+			value.mantissa=-value.mantissa
+			return value
+		}
+		
+		negate() {
+			return Decimal.negate(this)
 		}
 		
 		static multiply(value1,value2) {
@@ -96,8 +121,8 @@
 		
 		static pow(value,power) {
 			value=new Decimal(value)
-			var mantissalog=BigInteger.multiply(Math.log10(value.mantissa),Math.round(Math.pow(2,53)*power))
-			var exponentlog=BigInteger.multiply(value.exponent,Math.round(Math.pow(2,53)*power))
+			var mantissalog=BigInteger.multiply(BigInteger.multiply(Math.log10(value.mantissa),Math.pow(2,53)),power)
+			var exponentlog=BigInteger.multiply(BigInteger.multiply(value.exponent,Math.pow(2,53)),power)
 			var logInt=BigInteger.divide(BigInteger.add(mantissalog,exponentlog),Math.pow(2,53))
 			var logDec=BigInteger.remainder(BigInteger.add(mantissalog,exponentlog),Math.pow(2,53))/Math.pow(2,53)
 			return Decimal.fromMantissaExponent(Math.pow(10,logDec),logInt)
@@ -123,14 +148,41 @@
 			return Decimal.pow(this,1/3)
 		}
 		
-		static negate(value) {
+		static floor(value) {
 			value=new Decimal(value)
-			value.mantissa=-value.mantissa
-			return value
+			if (value.exponent>17) return value
+			if (value.exponent<0&&value.mantissa<0) return Decimal.fromMantissaExponent(-1,0)
+			if (value.exponent<0) return Decimal.fromMantissaExponent(0,0)
+			return Decimal.fromMantissaExponent(Math.floor(value.mantissa*Math.pow(10,value.exponent))/Math.pow(10,value.exponent),value.exponent)
 		}
 		
-		negate() {
-			return Decimal.negate(this)
+		floor() {
+			return Decimal.floor(this)
+		}
+		
+		static ceil(value) {
+			value=new Decimal(value)
+			if (value.exponent>17) return value
+			if (value.exponent<0&&value.mantissa>0) return Decimal.fromMantissaExponent(1,0)
+			if (value.exponent<0) return Decimal.fromMantissaExponent(0,0)
+			return Decimal.fromMantissaExponent(Math.ceil(value.mantissa*Math.pow(10,value.exponent))/Math.pow(10,value.exponent),value.exponent)
+		}
+		
+		ceil() {
+			return Decimal.ceil(this)
+		}
+		
+		static round(value) {
+			value=new Decimal(value)
+			if (value.exponent>17) return value
+			if (value.exponent==-1&&value.mantissa>=5) return Decimal.fromMantissaExponent(1,0)
+			if (value.exponent==-1&&value.mantissa<=-5) return Decimal.fromMantissaExponent(-1,0)
+			if (value.exponent<0) return Decimal.fromMantissaExponent(0,0)
+			return Decimal.fromMantissaExponent(Math.round(value.mantissa*Math.pow(10,value.exponent))/Math.pow(10,value.exponent),value.exponent)
+		}
+		
+		round() {
+			return Decimal.ceil(this)
 		}
 		
 		static compareTo(value1,value2) {
