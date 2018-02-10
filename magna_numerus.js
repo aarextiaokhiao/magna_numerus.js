@@ -43,11 +43,11 @@ function turnExponentialToFixed(number) {
 				return value
 			} else if (value.constructor.name=='v') {
 				var magnitude=value.magnitude
-				magnitude[-1]=0
 				var check=magnitude.length-1
 				while (magnitude[check]==0) {
 					check--
 				}
+				if (check==0) return Decimal.fromMantissaExponent(magnitude[0],0)
 				return Decimal.pow(9007199254740992,check).times(magnitude[check]+magnitude[check-1]/9007199254740992)
 			} else if (typeof(value)=='string') {
 				var indexOf=value.indexOf('e')
@@ -198,7 +198,7 @@ function turnExponentialToFixed(number) {
 		}
 		
 		mul(value) {
-			return Decimal.multiply(this,value)
+			return Decimal.mul(this,value)
 		}
 		
 		static multiply(value1,value2) {
@@ -218,19 +218,19 @@ function turnExponentialToFixed(number) {
 		}
 		
 		static div(value1,value2) {
-			return Decimal.multiply(value1,Decimal.reciprocal(value2))
+			return Decimal.mul(value1,Decimal.reciprocal(value2))
 		}
 		
 		div(value) {
-			return Decimal.multiply(this,Decimal.reciprocal(value))
+			return Decimal.mul(this,Decimal.reciprocal(value))
 		}
 		
 		static divide(value1,value2) {
-			return Decimal.multiply(value1,Decimal.reciprocal(value2))
+			return Decimal.mul(value1,Decimal.reciprocal(value2))
 		}
 		
 		divide(value) {
-			return Decimal.multiply(this,Decimal.reciprocal(value))
+			return Decimal.mul(this,Decimal.reciprocal(value))
 		}
 		
 		static recip(value) {
