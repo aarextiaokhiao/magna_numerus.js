@@ -82,9 +82,10 @@ function turnExponentialToFixed(number) {
 		
 		static toString(value) {
 			value=new Decimal(value)
+			if (value.eq(Number.POSITIVE_INFINITY)) return 'Infinity'
+			if (value.eq(Number.NEGATIVE_INFINITY)) return '-Infinity'
 			if (value.exponent>20||value.exponent<-20) return value.mantissa+'e'+value.exponent
-			var mantissalog=Math.log10(value.mantissa)
-			return value.mantissa*powersof10[indexof0inpowersof10+mantissalog]
+			return (value.mantissa*powersof10[indexof0inpowersof10+value.exponent]).toString()
 		}
 		
 		toString() {
@@ -93,9 +94,10 @@ function turnExponentialToFixed(number) {
 		
 		static toPrecision(value,dp) {
 			value=new Decimal(value)
+			if (value.eq(Number.POSITIVE_INFINITY)) return 'Infinity'
+			if (value.eq(Number.NEGATIVE_INFINITY)) return '-Infinity'
 			if (value.exponent>dp||value.exponent<-dp) return (value.mantissa).toPrecision(dp)+'e'+value.exponent
-			var mantissalog=Math.log10(value.mantissa)
-			return (value.mantissa*powersof10[indexof0inpowersof10+mantissalog]).toPrecision(dp)
+			return (value.mantissa*powersof10[indexof0inpowersof10+value.exponent]).toPrecision(dp-value.exponent)
 		}
 		
 		toPrecision(dp) {
@@ -104,9 +106,11 @@ function turnExponentialToFixed(number) {
 		
 		static toFixed(value,dp) {
 			value=new Decimal(value)
+			if (value.eq(Number.POSITIVE_INFINITY)) return 'Infinity'
+			if (value.eq(Number.NEGATIVE_INFINITY)) return '-Infinity'
 			if (value.exponent>dp||value.exponent<-dp) return (value.mantissa).toFixed(dp)+'e'+value.exponent
-			var mantissalog=Math.log10(value.mantissa)
-			return (value.mantissa*powersof10[indexof0inpowersof10+mantissalog]).toFixed(dp)
+			var mantissalog=Math.floor(Math.log10(value.mantissa))
+			return (value.mantissa*powersof10[indexof0inpowersof10+value.exponent]).toFixed(dp-value.exponent)
 		}
 		
 		toFixed(dp) {
@@ -115,6 +119,8 @@ function turnExponentialToFixed(number) {
 		
 		static toExponential(value,dp) {
 			value=new Decimal(value)
+			if (value.eq(Number.POSITIVE_INFINITY)) return 'Infinity'
+			if (value.eq(Number.NEGATIVE_INFINITY)) return '-Infinity'
 			return (value.mantissa).toFixed(dp)+'e'+value.exponent
 		}
 		
@@ -351,7 +357,7 @@ function turnExponentialToFixed(number) {
 		static min(value1,value2) {
 			value1=new Decimal(value1)
 			value2=new Decimal(value2)
-			if (compareTo(value1,value2)>0) return value2
+			if (Decimal.compareTo(value1,value2)>0) return value2
 			return value1
 		}
 		
@@ -362,7 +368,7 @@ function turnExponentialToFixed(number) {
 		static max(value1,value2) {
 			value1=new Decimal(value1)
 			value2=new Decimal(value2)
-			if (compareTo(value1,value2)>0) return value1
+			if (Decimal.compareTo(value1,value2)>0) return value1
 			return value2
 		}
 		
@@ -425,6 +431,9 @@ function turnExponentialToFixed(number) {
 		static sumGeometricSeries(start,ratio,length) {
 			return Decimal.pow(ratio,length).sub(1).div(Decimal.sub(ratio,1)).times(start)
 		}
+		
+		valueOf() { return this.toString(); }
+		toJSON() { return this.toString(); }
 	}
 	
 	//Used from Patashu's break_infinity.js (and credited the author too, https://github.com/Patashu/break_infinity.js)
