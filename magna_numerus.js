@@ -42,7 +42,13 @@ function turnExponentialToFixed(number) {
 			} else if (value instanceof Decimal) {
 				return value
 			} else if (value.constructor.name=='v') {
-				return new Decimal(value.toString(),0)
+				var magnitude=value.magnitude
+				magnitude[-1]=0
+				var check=magnitude.length-1
+				while (magnitude[check]==0) {
+					check--
+				}
+				return Decimal.pow(9007199254740992,check).times(magnitude[check]+magnitude[check-1]/9007199254740992)
 			} else if (typeof(value)=='string') {
 				var indexOf=value.indexOf('e')
 				if (indexOf==-1&&value.length>308) return Decimal.fromMantissaExponent(value.slice(0,15)*1e-14,value.length-1)
