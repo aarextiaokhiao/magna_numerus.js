@@ -296,15 +296,20 @@ function turnExponentialToFixed(number) {
 		
 		static pow(value,power) {
 			value=new Decimal(value)
-			if (power==Number.NEGATIVE_INFINITY) return new Decimal(0)
-			if (power==Number.POSITIVE_INFINITY) return new Decimal(Number.POSITIVE_INFINITY)
+			if (typeof(power)=='number') {
+				if (power==Number.NEGATIVE_INFINITY) return new Decimal(0)
+				if (power==Number.POSITIVE_INFINITY) return new Decimal(Number.POSITIVE_INFINITY)
+			}
+			if (power instanceof Decimal) power=Decimal.toString(power)
 			if (value.compareTo(1)==0) return new Decimal(1)
 			if (value.compareTo(10)==0&&power<9007199254740992&&power>-9007199254740992) return Decimal.fromMantissaExponent(Math.pow(10,power%1),Math.floor(power))
 			if (power==0) return new Decimal(1)
 			if (power==1) return value
 			if (power==-1) return Decimal.recip(value)
-			if (power<-9007199254740992||power>9007199254740992) power=BigInteger.parseInt(turnExponentialToFixed(power))
-			else if (typeof(power)=='string') power=parseFloat(power)
+			if (typeof(power)=='string') {
+				if (power<-9007199254740992||power>9007199254740992) power=BigInteger.parseInt(turnExponentialToFixed(power))
+				else power=parseFloat(power)
+			}
 			if (value.mantissa==1) {
 				var sumlog=BigInteger.multiply(BigInteger.multiply(value.exponent,9007199254740992),power)
 			} else {
