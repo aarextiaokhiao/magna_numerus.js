@@ -123,8 +123,8 @@ function turnExponentialToFixed(number) {
 				if (value.mantissa<0) return '-Infinity'
 				return 'Infinity'
 			}
-			if (value.exponent>20||value.exponent<-7) return value.mantissa+'e'+value.exponent
-			return (value.mantissa*powersof10[indexof0inpowersof10+value.exponent]).toPrecision(dp-value.exponent)
+			if (value.exponent>20||value.exponent<-7) return value.mantissa.toPrecision(dp)+'e'+value.exponent
+			return (value.mantissa*powersof10[indexof0inpowersof10+value.exponent]).toPrecision(dp)
 		}
 		
 		toPrecision(dp) {
@@ -137,8 +137,8 @@ function turnExponentialToFixed(number) {
 				if (value.mantissa<0) return '-Infinity'
 				return 'Infinity'
 			}
-			if (value.exponent>20||value.exponent<-7) return value.mantissa+'e'+value.exponent
-			return (value.mantissa*powersof10[indexof0inpowersof10+value.exponent]).toFixed(dp-value.exponent)
+			if (value.exponent>20||value.exponent<-7) return value.mantissa.toFixed(dp)+'e'+value.exponent
+			return (value.mantissa*powersof10[indexof0inpowersof10+value.exponent]).toFixed(dp)
 		}
 		
 		toFixed(dp) {
