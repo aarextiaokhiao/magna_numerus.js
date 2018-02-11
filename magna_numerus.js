@@ -4,9 +4,11 @@
 
 function turnExponentialToFixed(number) {
 	number=number.toString()
-	var indexOf=number.indexOf('e')
-	if (indexOf==-1) return number
-	return number.slice(0,1)+number.slice(2,indexOf)+'0'.repeat(parseInt(number.slice(indexOf+1,number.length))-number.slice(2,indexOf).length)
+	if (number.indexOf('e')==-1) return number
+	var splits=number.split('e')
+	splits[0]=splits[0].replace('.','')
+	if (splits[0].indexOf('-')>-1) return splits[0]+'0'.repeat(parseInt(splits[1])-splits[0].length+2)
+	return splits[0]+'0'.repeat(parseInt(splits[1])-splits[0].length+1)
 }
 
 ;(function (globalScope) {
@@ -50,10 +52,28 @@ function turnExponentialToFixed(number) {
 				if (check==0) return Decimal.fromMantissaExponent(magnitude[0],0)
 				return Decimal.pow(9007199254740992,check).times(magnitude[check]+magnitude[check-1]/9007199254740992)
 			} else if (typeof(value)=='string') {
-				var indexOf=value.indexOf('e')
-				if (indexOf==-1&&value.length>308) return Decimal.fromMantissaExponent(value.slice(0,15)*1e-14,value.length-1)
-				if (indexOf==-1) return Decimal.fromMantissaExponent(value,0)
-				return Decimal.fromMantissaExponent(parseFloat(value.slice(0,indexOf)),BigInteger.parseInt(turnExponentialToFixed(value.slice(indexOf+1,value.length))))
+				var mantissa=value
+				var exponent=0
+				var indexof=value.indexOf('e')
+				if (indexof>0) {
+					mantissa=value.slice(0,indexof)
+					exponent=BigInteger.parseInt(turnExponentialToFixed(value.slice(indexof+1,value.length)))
+				}
+				var mult=1
+				if (mantissa.indexOf('-')>0) {
+					mantissa=mantissa.replace('-','')
+					mult=-1
+				}
+				var manDecimal=''
+				if (mantissa.indexOf('.')>0) {
+					var split2=mantissa.split('.')
+					mantissa=split2[0]
+					manDecimal=split2[1]
+				}
+				exponent=BigInteger.add(exponent,mantissa.length-1)
+				mantissa=mantissa+manDecimal
+				mantissa=mantissa.slice(0,Math.min(mantissa.length,15))*powersof10[Math.max(324-mantissa.length,309)]
+				return Decimal.fromMantissaExponent(mantissa*mult,exponent)
 			} else if (typeof(value)=='number') {
 				if (value==Number.POSITIVE_INFINITY) {
 					return {mantissa:1,exponent:EXP_LIMIT}
@@ -278,10 +298,11 @@ function turnExponentialToFixed(number) {
 			if (power==Number.NEGATIVE_INFINITY) return new Decimal(0)
 			if (power==Number.POSITIVE_INFINITY) return new Decimal(Number.POSITIVE_INFINITY)
 			if (value.compareTo(1)==0) return new Decimal(1)
-			if (value.compareTo(10)==0&&power<9007199254740992) return Decimal.fromMantissaExponent(Math.pow(10,power%1),Math.floor(power))
+			if (value.compareTo(10)==0&&Math.abs(power)<9007199254740992) return Decimal.fromMantissaExponent(Math.pow(10,power%1),Math.floor(power))
 			if (power==0) return new Decimal(1)
 			if (power==1) return value
-			if (power>9007199254740992) power=BigInteger.parseInt(turnExponentialToFixed(power))
+			if (power==-1) return Decimal.recip(value)
+			if (Math.abs(power)>9007199254740992) power=BigInteger.parseInt(turnExponentialToFixed(power))
 			if (value.mantissa==1) {
 				var sumlog=BigInteger.multiply(BigInteger.multiply(value.exponent,9007199254740992),power)
 			} else {
