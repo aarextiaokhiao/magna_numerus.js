@@ -18,12 +18,14 @@ function turnExponentialToFixed(number) {
 
 //Start accurate BigInteger multiply function
 function BigIntegerMultiply(value1,value2) {
+	if (value2.constructor.name=='v') return BigInteger.multiply(value1,value2)
 	if (typeof(value1)=='number') return value1*value2
 	
-	var exponent=14
+	var exponent=Math.max(14-Math.floor(Math.log10(value2)),0)
 	while (value2%powersof10[indexof0inpowersof10-exponent]==0&&exponent>0) {
 		exponent--
 	}
+	if (exponent==0) return BigInteger.multiply(value1,value2)
 	return BigInteger.divide(BigInteger.multiply(BigInteger.multiply(value1,powersof10[indexof0inpowersof10+exponent]),value2),powersof10[indexof0inpowersof10+exponent])
 }
 
