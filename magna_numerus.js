@@ -18,7 +18,7 @@ function turnExponentialToFixed(number) {
 
 //Start accurate BigInteger multiply function
 function BigIntegerMultiply(value1,value2) {
-	if (value2.constructor.name=='v') return BigInteger.multiply(value1,value2)
+	if (value2.magnitude!=undefined) return BigInteger.multiply(value1,value2)
 	if (typeof(value1)=='number') return value1*value2
 	
 	var exponent=Math.max(14-Math.floor(Math.log10(value2)),0)
@@ -97,7 +97,7 @@ function BigIntegerMultiply(value1,value2) {
 					return {mantissa:0,exponent:0}
 				} else {
 					var log=Math.floor(Math.log10(Math.abs(value)))
-					return {mantissa:value*powersof10[indexof0inpowersof10-log],exponent:log}
+					return {mantissa:Math.round(value*powersof10[indexof0inpowersof10-log+14])/1e14,exponent:log}
 				}
 			} else {
 				return {mantissa:0,exponent:0}
@@ -230,6 +230,17 @@ function BigIntegerMultiply(value1,value2) {
 			return Decimal.add(this,Decimal.neg(value))
 		}
 		
+		static sign(value) {
+			value=new Decimal(value)
+			if (value.mantissa<0) return -1
+			if (value.mantissa==0) return 0
+			return 1
+		}
+		
+		sign() {
+			return Decimal.sign(this)
+		}
+		
 		static neg(value) {
 			value=new Decimal(value)
 			value.mantissa=-value.mantissa
@@ -237,7 +248,7 @@ function BigIntegerMultiply(value1,value2) {
 		}
 		
 		neg() {
-			return Decimal.negate(this)
+			return Decimal.neg(this)
 		}
 		
 		static negate(value) {
@@ -345,6 +356,24 @@ function BigIntegerMultiply(value1,value2) {
 		
 		power(value) {
 			return Decimal.pow(this,value)
+		}
+		
+		static square(value) {
+			value=new Decimal(value)
+			return Decimal.fromMantissaExponent(value.mantissa*value.mantissa,BigInteger.multiply(value.exponent,2))
+		}
+		
+		square() {
+			return Decimal.square(this)
+		}
+		
+		static cube(value) {
+			value=new Decimal(value)
+			return Decimal.fromMantissaExponent(value.mantissa*value.mantissa*value.mantissa,BigInteger.multiply(value.exponent,3))
+		}
+		
+		cube() {
+			return Decimal.cube(this)
 		}
 		
 		static exp(value) {
@@ -472,12 +501,12 @@ function BigIntegerMultiply(value1,value2) {
 		}
 		
 		static compareTo(value1,value2) {
-			value1=Decimal.fromValue(value1)
-			value2=Decimal.fromValue(value2)
-			var isV1Negative=(value1.mantissa<0)
-			var isV2Negative=(value2.mantissa<0)
-			if (isV1Negative&&!isV2Negative) return -1
-			if (isV2Negative&&!isV1Negative) return 1
+			value1=new Decimal(value1)
+			value2=new Decimal(value2)
+			var sign1=Decimal.sign(value1)
+			var sign2=Decimal.sign(value2)
+			if (sign1>sign2) return 1
+			if (sign1<sign2) return -1
 			var firstCompare=BigInteger.compareTo(value1.exponent,value2.exponent)
 			if (firstCompare==0) return (value1.mantissa<value2.mantissa)?-1:(value1.mantissa>value2.mantissa)?1:0
 			return firstCompare
