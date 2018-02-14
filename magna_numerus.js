@@ -66,6 +66,8 @@ function BigIntegerMultiply(value1,value2) {
 				if (check==0) return Decimal.fromMantissaExponent(magnitude[0],0)
 				return Decimal.pow(9007199254740992,check).times(magnitude[check]+magnitude[check-1]/9007199254740992)
 			} else if (typeof(value)=='string') {
+				if (value=='Infinity') return {mantissa:1,exponent:EXP_LIMIT}
+				if (value=='-Infinity') return {mantissa:-1,exponent:EXP_LIMIT}
 				var mantissa=value
 				var exponent=0
 				var indexof=value.indexOf('e')
@@ -115,7 +117,8 @@ function BigIntegerMultiply(value1,value2) {
 			if (mantissa==0) return value
 			var mantissalog=Math.floor(Math.log10(Math.abs(mantissa)))
 			value.mantissa=Math.round(mantissa*powersof10[indexof0inpowersof10-mantissalog+14])/1e14
-			value.exponent=BigInteger.add(exponent,mantissalog)
+			if (mantissalog==0) value.exponent=exponent
+			else value.exponent=BigInteger.add(exponent,mantissalog)
 			if (BigInteger.compareTo(value.exponent,BigInteger.negate(EXP_LIMIT))<=0) return new Decimal(Number.NEGATIVE_INFINITY)
 			if (BigInteger.compareTo(value.exponent,EXP_LIMIT)>=0) return new Decimal(Number.POSITIVE_INFINITY)
 			return value
@@ -195,6 +198,11 @@ function BigIntegerMultiply(value1,value2) {
 		static add(value1,value2) {
 			value1=new Decimal(value1)
 			value2=new Decimal(value2)
+			if (Decimal.compareTo(value1.exponent,value2.exponent)!=0) {
+				var expdiffDecimal=Decimal.sub(value1.exponent,value2.exponent)
+				if (Decimal.compareTo(expdiffDecimal,14)>0) return value1
+				if (Decimal.compareTo(expdiffDecimal,-14)<0) return value2
+			}
 			var expdiff=BigInteger.subtract(value1.exponent,value2.exponent)
 			if (expdiff>14) return value1
 			if (expdiff<-14) return value2
@@ -286,19 +294,21 @@ function BigIntegerMultiply(value1,value2) {
 		}
 		
 		static div(value1,value2) {
-			return Decimal.mul(value1,Decimal.reciprocal(value2))
+			value1=new Decimal(value1)
+			value2=new Decimal(value2)
+			return Decimal.fromMantissaExponent(value1.mantissa/value2.mantissa,BigInteger.subtract(value1.exponent,value2.exponent))
 		}
 		
 		div(value) {
-			return Decimal.mul(this,Decimal.reciprocal(value))
+			return Decimal.div(this,value)
 		}
 		
 		static divide(value1,value2) {
-			return Decimal.mul(value1,Decimal.reciprocal(value2))
+			return Decimal.div(value1,value2)
 		}
 		
 		divide(value) {
-			return Decimal.mul(this,Decimal.reciprocal(value))
+			return Decimal.div(this,value)
 		}
 		
 		static recip(value) {
