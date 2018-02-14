@@ -230,7 +230,10 @@ function BigIntegerMultiply(value1,value2) {
 			if (typeof(value1.exponent)!='number'||typeof(value2.exponent)!='number') {
 				var expdiffDecimal=Decimal.sub(value1.exponent,value2.exponent)
 				if (expdiffDecimal.exponent>1) {
-					if (expdiffDecimal.mantissa<0) return value2
+					if (expdiffDecimal.mantissa<0) {
+						value2.mantissa=-value2.mantissa
+						return value2
+					}
 					return value1
 				}
 			}
