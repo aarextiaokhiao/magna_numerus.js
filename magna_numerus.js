@@ -198,7 +198,7 @@ function BigIntegerMultiply(value1,value2) {
 		static add(value1,value2) {
 			value1=new Decimal(value1)
 			value2=new Decimal(value2)
-			if (Decimal.compareTo(value1.exponent,value2.exponent)!=0) {
+			if (typeof(value1.exponent)=='number'||typeof(value2.exponent)=='number') {
 				var expdiffDecimal=Decimal.sub(value1.exponent,value2.exponent)
 				if (Decimal.compareTo(expdiffDecimal,14)>0) return value1
 				if (Decimal.compareTo(expdiffDecimal,-14)<0) return value2
@@ -223,19 +223,36 @@ function BigIntegerMultiply(value1,value2) {
 		}
 		
 		static sub(value1,value2) {
-			return Decimal.add(value1,Decimal.neg(value2))
+			value1=new Decimal(value1)
+			value2=new Decimal(value2)
+			if (typeof(value1.exponent)=='number'||typeof(value2.exponent)=='number') {
+				var expdiffDecimal=Decimal.sub(value1.exponent,value2.exponent)
+				if (Decimal.compareTo(expdiffDecimal,14)>0) return value1
+				if (Decimal.compareTo(expdiffDecimal,-14)<0) {
+					value2.mantissa=-value2.mantissa
+					return value2
+				}
+			}
+			var expdiff=BigInteger.subtract(value1.exponent,value2.exponent)
+			if (expdiff>14) return value1
+			if (expdiff<-14) {
+				value2.mantissa=-value2.mantissa
+				return value2
+			}
+			if (expdiff>0) return Decimal.fromMantissaExponent(Math.round((value1.mantissa-value2.mantissa*powersof10[indexof0inpowersof10-expdiff])*1e14)/1e14,value1.exponent)
+			return Decimal.fromMantissaExponent(Math.round((value1.mantissa*powersof10[indexof0inpowersof10+expdiff]-value2.mantissa)*1e14)/1e14,value2.exponent)
 		}
 		
 		sub(value) {
-			return Decimal.add(this,Decimal.neg(value))
+			return Decimal.sub(this,value)
 		}
 		
 		static subtract(value1,value2) {
-			return Decimal.add(value1,Decimal.neg(value2))
+			return Decimal.sub(value1,value2)
 		}
 		
 		subtract(value) {
-			return Decimal.add(this,Decimal.neg(value))
+			return Decimal.sub(this,value)
 		}
 		
 		static sign(value) {
@@ -527,43 +544,97 @@ function BigIntegerMultiply(value1,value2) {
 		}
 		
 		static lt(value1,value2) {
-			return Decimal.compareTo(value1,value2)<0
+			value1=new Decimal(value1)
+			value2=new Decimal(value2)
+			var sign1=Decimal.sign(value1)
+			var sign2=Decimal.sign(value2)
+			if (sign1>sign2) return false
+			if (sign1<sign2) return true
+			var firstCompare=BigInteger.compareTo(value1.exponent,value2.exponent)
+			if (firstCompare==0) return value1.mantissa<value2.mantissa
+			return firstCompare<0
 		}
 		
 		lt(value) {
-			return Decimal.compareTo(this,value)<0
+			return Decimal.lt(this,value)
 		}
 		
 		static lte(value1,value2) {
-			return Decimal.compareTo(value1,value2)<=0
+			value1=new Decimal(value1)
+			value2=new Decimal(value2)
+			var sign1=Decimal.sign(value1)
+			var sign2=Decimal.sign(value2)
+			if (sign1>sign2) return false
+			if (sign1<sign2) return true
+			var firstCompare=BigInteger.compareTo(value1.exponent,value2.exponent)
+			if (firstCompare==0) return value1.mantissa<=value2.mantissa
+			return firstCompare<1
 		}
 		
 		lte(value) {
-			return Decimal.compareTo(this,value)<=0
+			return Decimal.lte(this,value)
 		}
 		
 		static eq(value1,value2) {
-			return Decimal.compareTo(value1,value2)==0
+			value1=new Decimal(value1)
+			value2=new Decimal(value2)
+			var sign1=Decimal.sign(value1)
+			var sign2=Decimal.sign(value2)
+			if (sign1!=sign2) return false
+			var firstCompare=BigInteger.compareTo(value1.exponent,value2.exponent)
+			if (firstCompare==0) return value1.mantissa==value2.mantissa
+			return false
 		}
 		
 		eq(value) {
-			return Decimal.compareTo(this,value)==0
+			return Decimal.eq(this,value)
+		}
+		
+		static neq(value1,value2) {
+			value1=new Decimal(value1)
+			value2=new Decimal(value2)
+			var sign1=Decimal.sign(value1)
+			var sign2=Decimal.sign(value2)
+			if (sign1!=sign2) return true
+			var firstCompare=BigInteger.compareTo(value1.exponent,value2.exponent)
+			if (firstCompare==0) return value1.mantissa!=value2.mantissa
+			return true
+		}
+		
+		neq(value) {
+			return Decimal.neq(this,value)
 		}
 		
 		static gte(value1,value2) {
-			return Decimal.compareTo(value1,value2)>=0
+			value1=new Decimal(value1)
+			value2=new Decimal(value2)
+			var sign1=Decimal.sign(value1)
+			var sign2=Decimal.sign(value2)
+			if (sign1>sign2) return true
+			if (sign1<sign2) return false
+			var firstCompare=BigInteger.compareTo(value1.exponent,value2.exponent)
+			if (firstCompare==0) return value1.mantissa>=value2.mantissa
+			return firstCompare>-1
 		}
 		
 		gte(value) {
-			return Decimal.compareTo(this,value)>=0
+			return Decimal.gte(this,value)
 		}
 		
 		static gt(value1,value2) {
-			return Decimal.compareTo(value1,value2)>0
+			value1=new Decimal(value1)
+			value2=new Decimal(value2)
+			var sign1=Decimal.sign(value1)
+			var sign2=Decimal.sign(value2)
+			if (sign1>sign2) return true
+			if (sign1<sign2) return false
+			var firstCompare=BigInteger.compareTo(value1.exponent,value2.exponent)
+			if (firstCompare==0) return value1.mantissa>value2.mantissa
+			return firstCompare>0
 		}
 		
 		gt(value) {
-			return Decimal.compareTo(this,value)>0
+			return Decimal.gt(this,value)
 		}
 		
 		static isNegative(value) {
