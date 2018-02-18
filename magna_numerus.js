@@ -21,12 +21,17 @@ function BigIntegerMultiply(value1,value2) {
 	if (value2.magnitude!=undefined) return BigInteger.multiply(value1,value2)
 	if (typeof(value1)=='number') return value1*value2
 	
-	var exponent=Math.max(14-Math.floor(Math.log10(value2)),0)
-	while (value2%powersof10[indexof0inpowersof10-exponent]==0&&exponent>0) {
-		exponent--
-	}
-	if (exponent==0) return BigInteger.multiply(value1,value2)
-	return BigInteger.divide(BigInteger.multiply(BigInteger.multiply(value1,powersof10[indexof0inpowersof10+exponent]),value2),powersof10[indexof0inpowersof10+exponent])
+	if (value2%1==0) return BigInteger.multiply(value1,value2)
+	return BigInteger.divide(BigInteger.multiply(value1,BigInteger.add(BigInteger.multiply(Math.floor(value2),9007199254740992),(value2%1)*9007199254740992)),9007199254740992)
+}
+
+//Start accurate BigInteger divide function
+function BigIntegerDivide(value1,value2) {
+	if (value2.magnitude!=undefined) return BigInteger.divide(value1,value2)
+	if (typeof(value1)=='number') return value1/value2
+	
+	if (value2%1==0) return BigInteger.divide(value1,value2)
+	return BigInteger.divide(BigInteger.multiply(value1,9007199254740992),BigInteger.add(BigInteger.multiply(Math.floor(value2),9007199254740992),(value2%1)*9007199254740992))
 }
 
 ;(function (globalScope) {
@@ -57,7 +62,7 @@ function BigIntegerMultiply(value1,value2) {
 				return {mantissa:0,exponent:0}
 			} else if (value instanceof Decimal) {
 				return value
-			} else if (value.constructor.name=='v') {
+			} else if (value.magnitude!=undefined) {
 				var magnitude=value.magnitude
 				var check=magnitude.length-1
 				while (magnitude[check]==0) {
@@ -160,7 +165,8 @@ function BigIntegerMultiply(value1,value2) {
 				if (value.mantissa<0) return '-Infinity'
 				return 'Infinity'
 			}
-			if (value.exponent>20||value.exponent<-7) return value.mantissa.toPrecision(dp)+'e'+value.exponent
+			if (value.exponent>20) return value.mantissa.toPrecision(dp)+'e'+value.exponent
+			if (value.exponent<-dp) return '0'
 			return (value.mantissa*powersof10[indexof0inpowersof10+value.exponent]).toPrecision(dp)
 		}
 		
@@ -174,7 +180,8 @@ function BigIntegerMultiply(value1,value2) {
 				if (value.mantissa<0) return '-Infinity'
 				return 'Infinity'
 			}
-			if (value.exponent>20||value.exponent<-7) return value.mantissa.toFixed(dp)+'e'+value.exponent
+			if (value.exponent>20) return value.mantissa.toFixed(dp)+'e'+value.exponent
+			if (value.exponent<-dp) return '0'
 			return (value.mantissa*powersof10[indexof0inpowersof10+value.exponent]).toFixed(dp)
 		}
 		
@@ -349,6 +356,36 @@ function BigIntegerMultiply(value1,value2) {
 			return Decimal.recip(this)
 		}
 		
+		static mod(value1,value2) {
+			value1=new Decimal(value1)
+			value2=new Decimal(value2)
+			if (typeof(value1.exponent)!='number'||typeof(value2.exponent)!='number') {
+				var expdiffDecimal=Decimal.sub(value1.exponent,value2.exponent)
+				if (expdiffDecimal.exponent>1) {
+					if (expdiffDecimal.mantissa<0) return value1
+					return new Decimal(0)
+				}
+			}
+			var expdiff=BigInteger.subtract(value1.exponent,value2.exponent)
+			if (expdiff>14) return new Decimal(0)
+			if (expdiff<-14) return value1
+			if (expdiff>0) return Decimal.fromMantissaExponent(value1.mantissa%(value2.mantissa/powersof10[indexof0inpowersof10+expdiff]),value1.exponent)
+			if (expdiff==0) return Decimal.fromMantissaExponent(value1.mantissa%value2.mantissa,value1.exponent)
+			return value1
+		}
+		
+		mod(value) {
+			return Decimal.mod(this,value)
+		}
+		
+		static remainder(value1,value2) {
+			return Decimal.mod(value1,value2)
+		}
+		
+		remainder(value) {
+			return Decimal.mod(this,value)
+		}
+		
 		static pow(value,power) {
 			value=new Decimal(value)
 			if (typeof(power)=='number') {
@@ -365,7 +402,13 @@ function BigIntegerMultiply(value1,value2) {
 				if (power<-9007199254740992||power>9007199254740992) power=BigInteger.parseInt(turnExponentialToFixed(power))
 				else power=parseFloat(power)
 			}
-			if (value.mantissa==1) {
+			if (value.mantissa==0) {
+				if (power>0) {
+					return new Decimal(0)
+				} else {
+					return new Decimal(Number.POSITIVE_INFINITY)
+				}
+			} else if (value.mantissa==1) {
 				var sumlog=BigIntegerMultiply(BigInteger.multiply(value.exponent,9007199254740992),power)
 			} else {
 				var mantissalog=BigInteger.multiply(Math.log10(value.mantissa),9007199254740992)
@@ -415,20 +458,54 @@ function BigIntegerMultiply(value1,value2) {
 			return Decimal.pow(Number.E,this)
 		}
 		
+		static root(value,power) {
+			value=new Decimal(value)
+			if (typeof(power)=='number') {
+				if (power==Number.NEGATIVE_INFINITY) return new Decimal(0)
+				if (power==Number.POSITIVE_INFINITY) return new Decimal(0)
+			}
+			if (power instanceof Decimal) power=Decimal.toString(power)
+			if (value.compareTo(1)==0) return new Decimal(Number.POSITIVE_INFINITY)
+			if (value.compareTo(10)==0&&power<9007199254740992&&power>-9007199254740992) return Decimal.fromMantissaExponent(Math.pow(10,(1/power)%1),Math.floor(1/power))
+			if (power==0) return new Decimal(1)
+			if (power==1) return value
+			if (power==-1) return Decimal.recip(value)
+			if (typeof(power)=='string') {
+				if (power<-9007199254740992||power>9007199254740992) power=BigInteger.parseInt(turnExponentialToFixed(power))
+				else power=parseFloat(power)
+			}
+			if (value.mantissa==0) {
+				return new Decimal(0)
+			} else if (value.mantissa==1) {
+				var sumlog=BigIntegerDivide(BigInteger.multiply(value.exponent,9007199254740992),power)
+			} else {
+				var mantissalog=BigInteger.multiply(Math.log10(value.mantissa),9007199254740992)
+				var exponentlog=BigInteger.multiply(value.exponent,9007199254740992)
+				var sumlog=BigIntegerDivide(BigInteger.add(mantissalog,exponentlog),power)
+			}
+			var logInt=BigInteger.divide(sumlog,9007199254740992)
+			var logDec=BigInteger.remainder(sumlog,9007199254740992)/9007199254740992
+			return Decimal.fromMantissaExponent(Math.pow(10,logDec),logInt)
+		}
+		
+		root(value) {
+			return Decimal.root(this,value)
+		}
+		
 		static sqrt(value) {
-			return Decimal.pow(this,0.5)
+			return Decimal.root(this,2)
 		}
 		
 		sqrt() {
-			return Decimal.pow(this,0.5)
+			return Decimal.root(this,2)
 		}
 		
 		static cbrt(value) {
-			return Decimal.pow(this,1/3)
+			return Decimal.root(this,3)
 		}
 		
 		cbrt() {
-			return Decimal.pow(this,1/3)
+			return Decimal.root(this,3)
 		}
 		
 		static log10(value) {
@@ -446,7 +523,7 @@ function BigIntegerMultiply(value1,value2) {
 			if (base==null) return Decimal.log10(value)
 			if (Decimal.eq(base,10)) return Decimal.log10(value)
 			value=new Decimal(value)
-			if (value.mantissa<0) return 0
+			if (value.mantissa<1) return 0
 			var baselog=Decimal.log10(base)
 			if (baselog>9007199254740992) {
 				return BigInteger.divide(BigInteger.divide(BigInteger.add(BigInteger.multiply(value.exponent,9007199254740992),BigInteger.multiply(Math.log10(value.mantissa),9007199254740992)),baselog),9007199254740992)
