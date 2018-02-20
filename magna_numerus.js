@@ -68,6 +68,10 @@ function BigIntegerDivide(value1,value2) {
 				while (magnitude[check]==0) {
 					check--
 				}
+				if (value.sign==1) {
+					if (check==0) return Decimal.fromMantissaExponent(-magnitude[0],0)
+					return Decimal.pow(9007199254740992,check).times(-magnitude[check]-magnitude[check-1]/9007199254740992)
+				}
 				if (check==0) return Decimal.fromMantissaExponent(magnitude[0],0)
 				return Decimal.pow(9007199254740992,check).times(magnitude[check]+magnitude[check-1]/9007199254740992)
 			} else if (typeof(value)=='string') {
@@ -510,7 +514,7 @@ function BigIntegerDivide(value1,value2) {
 		
 		static log10(value) {
 			value=new Decimal(value)
-			if (value.mantissa<0) return 0
+			if (value.mantissa<1) return 0
 			if (value.exponent>9007199254740992) return value.exponent
 			return value.exponent+Math.log10(value.mantissa)
 		}
@@ -589,7 +593,25 @@ function BigIntegerDivide(value1,value2) {
 		static min(value1,value2) {
 			value1=new Decimal(value1)
 			value2=new Decimal(value2)
-			if (Decimal.compareTo(value1,value2)>0) return value2
+			var sign1=Decimal.sign(value1)
+			var sign2=Decimal.sign(value2)
+			if (sign1>sign2) return value2
+			if (sign1<sign2) return value1
+			if (typeof(value1.exponent)!='number'||typeof(value2.exponent)!='number') {
+				var expdiff=Decimal.sub(value1.exponent,value2.exponent)
+				if (expdiff.mantissa>0) return value2
+				if (expdiff.mantissa<0) return value1
+			}
+			var firstCompare=BigInteger.compareTo(value1.exponent,value2.exponent)
+			if (firstCompare==0) {
+				if (value1.mantissa>value2.mantissa) return value2
+				return value1
+			}
+			if (sign1==-1) {
+				if (firstCompare<0) return value2
+				return value1
+			}
+			if (firstCompare>0) return value2
 			return value1
 		}
 		
@@ -600,7 +622,25 @@ function BigIntegerDivide(value1,value2) {
 		static max(value1,value2) {
 			value1=new Decimal(value1)
 			value2=new Decimal(value2)
-			if (Decimal.compareTo(value1,value2)>0) return value1
+			var sign1=Decimal.sign(value1)
+			var sign2=Decimal.sign(value2)
+			if (sign1>sign2) return value1
+			if (sign1<sign2) return value2
+			if (typeof(value1.exponent)!='number'||typeof(value2.exponent)!='number') {
+				var expdiff=Decimal.sub(value1.exponent,value2.exponent)
+				if (expdiff.mantissa>0) return value1
+				if (expdiff.mantissa<0) return value2
+			}
+			var firstCompare=BigInteger.compareTo(value1.exponent,value2.exponent)
+			if (firstCompare==0) {
+				if (value1.mantissa>value2.mantissa) return value1
+				return value2
+			}
+			if (sign1==-1) {
+				if (firstCompare<0) return value1
+				return value2
+			}
+			if (firstCompare>0) return value1
 			return value2
 		}
 		
@@ -615,6 +655,11 @@ function BigIntegerDivide(value1,value2) {
 			var sign2=Decimal.sign(value2)
 			if (sign1>sign2) return 1
 			if (sign1<sign2) return -1
+			if (typeof(value1.exponent)!='number'||typeof(value2.exponent)!='number') {
+				var expdiff=Decimal.sub(value1.exponent,value2.exponent)
+				if (expdiff.mantissa>0) return 1
+				if (expdiff.mantissa<0) return -1
+			}
 			var firstCompare=BigInteger.compareTo(value1.exponent,value2.exponent)
 			if (firstCompare==0) return (value1.mantissa<value2.mantissa)?-1:(value1.mantissa>value2.mantissa)?1:0
 			if (sign1==-1) return -firstCompare
@@ -632,6 +677,11 @@ function BigIntegerDivide(value1,value2) {
 			var sign2=Decimal.sign(value2)
 			if (sign1>sign2) return false
 			if (sign1<sign2) return true
+			if (typeof(value1.exponent)!='number'||typeof(value2.exponent)!='number') {
+				var expdiff=Decimal.sub(value1.exponent,value2.exponent)
+				if (expdiff.mantissa>0) return false
+				if (expdiff.mantissa<0) return true
+			}
 			var firstCompare=BigInteger.compareTo(value1.exponent,value2.exponent)
 			if (firstCompare==0) return value1.mantissa<value2.mantissa
 			if (sign1==-1) return firstCompare>0
@@ -649,6 +699,11 @@ function BigIntegerDivide(value1,value2) {
 			var sign2=Decimal.sign(value2)
 			if (sign1>sign2) return false
 			if (sign1<sign2) return true
+			if (typeof(value1.exponent)!='number'||typeof(value2.exponent)!='number') {
+				var expdiff=Decimal.sub(value1.exponent,value2.exponent)
+				if (expdiff.mantissa>0) return false
+				if (expdiff.mantissa<0) return true
+			}
 			var firstCompare=BigInteger.compareTo(value1.exponent,value2.exponent)
 			if (firstCompare==0) return value1.mantissa<=value2.mantissa
 			if (sign1==-1) return firstCompare>-1
@@ -665,6 +720,10 @@ function BigIntegerDivide(value1,value2) {
 			var sign1=Decimal.sign(value1)
 			var sign2=Decimal.sign(value2)
 			if (sign1!=sign2) return false
+			if (typeof(value1.exponent)!='number'||typeof(value2.exponent)!='number') {
+				var expdiff=Decimal.sub(value1.exponent,value2.exponent)
+				if (expdiff.mantissa!=0) return false
+			}
 			var firstCompare=BigInteger.compareTo(value1.exponent,value2.exponent)
 			if (firstCompare==0) return value1.mantissa==value2.mantissa
 			return false
@@ -680,6 +739,10 @@ function BigIntegerDivide(value1,value2) {
 			var sign1=Decimal.sign(value1)
 			var sign2=Decimal.sign(value2)
 			if (sign1!=sign2) return true
+			if (typeof(value1.exponent)!='number'||typeof(value2.exponent)!='number') {
+				var expdiff=Decimal.sub(value1.exponent,value2.exponent)
+				if (expdiff.mantissa!=0) return true
+			}
 			var firstCompare=BigInteger.compareTo(value1.exponent,value2.exponent)
 			if (firstCompare==0) return value1.mantissa!=value2.mantissa
 			return true
@@ -696,6 +759,11 @@ function BigIntegerDivide(value1,value2) {
 			var sign2=Decimal.sign(value2)
 			if (sign1>sign2) return true
 			if (sign1<sign2) return false
+			if (typeof(value1.exponent)!='number'||typeof(value2.exponent)!='number') {
+				var expdiff=Decimal.sub(value1.exponent,value2.exponent)
+				if (expdiff.mantissa>0) return true
+				if (expdiff.mantissa<0) return false
+			}
 			var firstCompare=BigInteger.compareTo(value1.exponent,value2.exponent)
 			if (firstCompare==0) return value1.mantissa>=value2.mantissa
 			if (sign1==-1) return firstCompare<1
@@ -713,6 +781,11 @@ function BigIntegerDivide(value1,value2) {
 			var sign2=Decimal.sign(value2)
 			if (sign1>sign2) return true
 			if (sign1<sign2) return false
+			if (typeof(value1.exponent)!='number'||typeof(value2.exponent)!='number') {
+				var expdiff=Decimal.sub(value1.exponent,value2.exponent)
+				if (expdiff.mantissa>0) return true
+				if (expdiff.mantissa<0) return false
+			}
 			var firstCompare=BigInteger.compareTo(value1.exponent,value2.exponent)
 			if (firstCompare==0) return value1.mantissa>value2.mantissa
 			if (sign1==-1) return firstCompare<0
