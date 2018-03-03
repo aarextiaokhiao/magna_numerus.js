@@ -497,7 +497,7 @@ function BigIntegerDivide(value1,value2) {
 		}
 		
 		static sqrt(value) {
-			return Decimal.root(this,2)
+			return Decimal.root(value,2)
 		}
 		
 		sqrt() {
@@ -505,7 +505,7 @@ function BigIntegerDivide(value1,value2) {
 		}
 		
 		static cbrt(value) {
-			return Decimal.root(this,3)
+			return Decimal.root(value,3)
 		}
 		
 		cbrt() {
@@ -523,24 +523,55 @@ function BigIntegerDivide(value1,value2) {
 			return Decimal.log10(this)
 		}
 		
-		static log(value,base) {
-			if (base==null) return Decimal.log10(value)
-			if (Decimal.eq(base,10)) return Decimal.log10(value)
+		static log10integer(value) {
+			value=new Decimal(value)
+			return value.exponent
+		}
+		
+		log10integer() {
+			return Decimal.log10integer(this)
+		}
+		
+		static log10remainder(value) {
 			value=new Decimal(value)
 			if (value.mantissa<1) return 0
-			var baselog=Decimal.log10(base)
-			if (baselog>9007199254740992) {
-				return BigInteger.divide(BigInteger.divide(BigInteger.add(BigInteger.multiply(value.exponent,9007199254740992),BigInteger.multiply(Math.log10(value.mantissa),9007199254740992)),baselog),9007199254740992)
+			return Math.log10(value.mantissa)
+		}
+		
+		log10remainder() {
+			return Decimal.log10remainder(this)
+		}
+		
+		static log(value,base) {
+			value=new Decimal(value)
+			base=new Decimal(base)
+			if (value.mantissa<1) return 0
+			if (base.mantissa<1) return Number.POSITIVE_INFINITY
+			if (base.mantissa==1&&base.exponent==0) return Number.POSITIVE_INFINITY
+			var valueLogInteger=value.exponent
+			var valueLogRemainder=Math.log10(value.mantissa)
+			var baseLogInteger=base.exponent
+			var baseLogRemainder=Math.log10(base.mantissa)
+			
+			var quotient=BigInteger.add(BigInteger.multiply(baseLogInteger,9007199254740992),baseLogRemainder*9007199254740992)
+			if (quotient!=Number.POSITIVE_INFINITY&&quotient!=Number.NEGATIVE_INFINITY) if (valueLogInteger/quotient<9007199254740992||valueLogInteger/quotient>-9007199254740992) {
+				var numLog=(valueLogInteger+valueLogRemainder)/(baseLogInteger+baseLogRemainder)
+				if (!Number.isNaN(numLog)) if (numLog!=Number.POSITIVE_INFINITY&&numLog!=Number.NEGATIVE_INFINITY) return numLog
 			}
-			var smalllog=(value.exponent+Math.log10(value.mantissa))/baselog
-			if (smalllog>9007199254740992) {
-				return BigInteger.divide(BigIntegerMultiply(BigInteger.add(BigInteger.multiply(value.exponent,9007199254740992),BigInteger.multiply(Math.log10(value.mantissa),9007199254740992)),1/baselog),9007199254740992)
-			}
-			return smalllog
+			
+			return BigInteger.divide(BigInteger.add(BigInteger.multiply(valueLogInteger,9007199254740992),valueLogRemainder*9007199254740992),quotient)
 		}
 		
 		log(base) {
 			return Decimal.log(this,base)
+		}
+		
+		static ln(value) {
+			return Decimal.log(value,Math.E)
+		}
+		
+		ln() {
+			return Decimal.log(this,Math.E)
 		}
 		
 		static floor(value) {
@@ -548,7 +579,7 @@ function BigIntegerDivide(value1,value2) {
 			if (value.exponent>17) return value
 			if (value.exponent<0&&value.mantissa<0) return Decimal.fromMantissaExponent(-1,0)
 			if (value.exponent<0) return Decimal.fromMantissaExponent(0,0)
-			return Decimal.fromMantissaExponent(Math.floor(value.mantissa*Math.pow(10,value.exponent))/Math.pow(10,value.exponent),value.exponent)
+			return Decimal.fromMantissaExponent(Math.floor(value.mantissa*powersof10[indexof0inpowersof10+value.exponent]+powersof10[indexof0inpowersof10+value.exponent-16])/powersof10[indexof0inpowersof10+value.exponent],value.exponent)
 		}
 		
 		floor() {
@@ -560,7 +591,7 @@ function BigIntegerDivide(value1,value2) {
 			if (value.exponent>17) return value
 			if (value.exponent<0&&value.mantissa>0) return Decimal.fromMantissaExponent(1,0)
 			if (value.exponent<0) return Decimal.fromMantissaExponent(0,0)
-			return Decimal.fromMantissaExponent(Math.ceil(value.mantissa*Math.pow(10,value.exponent))/Math.pow(10,value.exponent),value.exponent)
+			return Decimal.fromMantissaExponent(Math.ceil(value.mantissa*powersof10[indexof0inpowersof10+value.exponent]-powersof10[indexof0inpowersof10+value.exponent-16])/powersof10[indexof0inpowersof10+value.exponent],value.exponent)
 		}
 		
 		ceil() {
@@ -573,7 +604,7 @@ function BigIntegerDivide(value1,value2) {
 			if (value.exponent==-1&&value.mantissa>=5) return Decimal.fromMantissaExponent(1,0)
 			if (value.exponent==-1&&value.mantissa<=-5) return Decimal.fromMantissaExponent(-1,0)
 			if (value.exponent<0) return Decimal.fromMantissaExponent(0,0)
-			return Decimal.fromMantissaExponent(Math.round(value.mantissa*Math.pow(10,value.exponent))/Math.pow(10,value.exponent),value.exponent)
+			return Decimal.fromMantissaExponent(Math.round(value.mantissa*powersof10[indexof0inpowersof10+value.exponent])/powersof10[indexof0inpowersof10+value.exponent],value.exponent)
 		}
 		
 		round() {
