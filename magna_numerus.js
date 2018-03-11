@@ -515,6 +515,7 @@ function BigIntegerDivide(value1,value2) {
 		static log10(value) {
 			value=new Decimal(value)
 			if (value.mantissa<1) return 0
+			if (Decimal.gt(value.exponent,9007199254740992)) return value.exponent
 			if (value.exponent>9007199254740992) return value.exponent
 			return value.exponent+Math.log10(value.mantissa)
 		}
