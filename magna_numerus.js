@@ -578,7 +578,7 @@ function BigIntegerDivide(value1,value2) {
 			var baseLogRemainder=Math.log10(base.mantissa)
 			
 			var quotient=BigInteger.add(BigInteger.multiply(baseLogInteger,9007199254740992),baseLogRemainder*9007199254740992)
-			if (quotient!=Number.POSITIVE_INFINITY&&quotient!=Number.NEGATIVE_INFINITY) if (valueLogInteger/quotient<9007199254740992||valueLogInteger/quotient>-9007199254740992) {
+			if (quotient!=Number.POSITIVE_INFINITY&&quotient!=Number.NEGATIVE_INFINITY) if (valueLogInteger/quotient<1&&valueLogInteger/quotient>-1) {
 				var numLog=(valueLogInteger+valueLogRemainder)/(baseLogInteger+baseLogRemainder)
 				if (!Number.isNaN(numLog)) if (numLog!=Number.POSITIVE_INFINITY&&numLog!=Number.NEGATIVE_INFINITY) return numLog
 			}
