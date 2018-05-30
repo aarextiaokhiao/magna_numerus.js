@@ -17,7 +17,7 @@
 	class Decimal {
 		static fromValue(value) {
 			if (value==null) {
-				return {logarithm:0}
+				return {logarithm:Number.NEGATIVE_INFINITY}
 			} else if (value.logarithm!=undefined) {
 				return value
 			} else if (typeof(value)=='string') {
@@ -41,6 +41,51 @@
 		constructor(value) { 
 			var value=Decimal.fromValue(value)
 			this.logarithm=value.logarithm
+		}
+		
+		static fromNumber(value) {
+			var valueTemp=new Decimal()
+			valueTemp.logarithm=Math.log10(value)
+			return valueTemp
+		}
+		
+		fromNumber() {
+			return Decimal.fromNumber(this)
+		}
+		
+		static fromString(value) {
+			var valueTemp=new Decimal()
+			var findE=value.search('e')
+			if (findE==-1) {
+				value=parseFloat(value)
+				return {logarithm:Math.log10(value)}
+			}
+			var split=[value.slice(0,findE),value.slice(findE+1,value.length)]
+			split[1]=parseFloat(split[1])
+			if (split[0]=='') valueTemp.logarithm=split[1]
+			else {
+				split[0]=parseFloat(split[0])
+				valueTemp.logarithm=Math.log10(split[0])+split[1]
+			}
+			return valueTemp
+		}
+		
+		fromString() {
+			var findE=value.search('e')
+			if (findE==-1) {
+				value=parseFloat(value)
+				return {logarithm:Math.log10(value)}
+			}
+			var split=[value.slice(0,findE),value.slice(findE+1,value.length)]
+			split[1]=parseFloat(split[1])
+			if (split[0]=='') return {logarithm:split[1]}
+			split[0]=parseFloat(split[0])
+			return {logarithm:Math.log10(split[0])+split[1]}
+		}
+		
+		static fromMantissaExponent(m,e) {
+			var value=new Decimal()
+			value.logarithm=e+Math.log10(m)
 		}
 		
 		static toString(value) {
@@ -135,8 +180,8 @@
 			value1=new Decimal(value1)
 			value2=new Decimal(value2)
 			var expdiff=value1.logarithm-value2.logarithm
-			if (expdiff>=15) return value1
-			if (expdiff<=-15) return value2
+			if (expdiff>=15||value2.logarithm==Number.NEGATIVE_INFINITY) return value1
+			if (expdiff<=-15||value1.logarithm==Number.NEGATIVE_INFINITY) return value2
 			value2.logarithm=value2.logarithm+Math.log10(1+Math.pow(10,expdiff))
 			return value2
 		}
@@ -157,7 +202,7 @@
 			value1=new Decimal(value1)
 			value2=new Decimal(value2)
 			var expdiff=value1.logarithm-value2.logarithm
-			if (expdiff>=15) return value1
+			if (expdiff>=15||value2.logarithm==Number.NEGATIVE_INFINITY) return value1
 			value1.logarithm=value1.logarithm+Math.log10(1-Math.pow(10,-expdiff))
 			return value1
 		}
@@ -171,6 +216,14 @@
 		}
 		
 		subtract(value) {
+			return Decimal.sub(this,value)
+		}
+		
+		static minus(value1,value2) {
+			return Decimal.sub(value1,value2)
+		}
+		
+		minus(value) {
 			return Decimal.sub(this,value)
 		}
 		
@@ -220,6 +273,22 @@
 			return Decimal.div(this,value)
 		}
 		
+		static divideBy(value1,value2) {
+			return Decimal.div(value1,value2)
+		}
+		
+		divideBy(value) {
+			return Decimal.div(this,value)
+		}
+		
+		static dividedBy(value1,value2) {
+			return Decimal.div(value1,value2)
+		}
+		
+		dividedBy(value) {
+			return Decimal.div(this,value)
+		}
+		
 		static recip(value) {
 			value=new Decimal(value)
 			value.logarithm=-value.logarithm
@@ -235,6 +304,14 @@
 		}
 		
 		reciprocal() {
+			return Decimal.recip(this)
+		}
+		
+		static reciprocate(value) {
+			return Decimal.recip(value)
+		}
+		
+		reciprocate() {
 			return Decimal.recip(this)
 		}
 		
@@ -278,24 +355,44 @@
 			return Decimal.pow(this,value)
 		}
 		
-		static square(value) {
+		pow_base(value) {
+			return Decimal.pow(value,this)
+		}
+		
+		static sqr(value) {
 			value=new Decimal(value)
 			value.logarithm=value.logarithm*2
 			return value
 		}
 		
-		square() {
+		sqr() {
 			return Decimal.square(this)
 		}
 		
-		static cube(value) {
+		static square(value) {
+			return Decimal.sqr(value)
+		}
+		
+		square() {
+			return Decimal.sqr(this)
+		}
+		
+		static cub(value) {
 			value=new Decimal(value)
 			value.logarithm=value.logarithm*3
 			return value
 		}
 		
-		cube() {
+		cub() {
 			return Decimal.cube(this)
+		}
+		
+		static cube(value) {
+			return Decimal.cub(value)
+		}
+		
+		cube() {
+			return Decimal.cub(this)
 		}
 		
 		static exp(value) {
@@ -365,6 +462,15 @@
 			return Decimal.log10remainder(this)
 		}
 		
+		static log2(value) {
+			value=new Decimal(value)
+			return value.logarithm*3.32192809488736234787
+		}
+		
+		log2() {
+			return Decimal.log10(this)
+		}
+		
 		static log(value,base) {
 			value=new Decimal(value)
 			base=new Decimal(base)
@@ -375,17 +481,26 @@
 			return Decimal.log(this,base)
 		}
 		
+		static logarithm(value,base) {
+			return Decimal.log(value,base)
+		}
+		
+		logarithm(base) {
+			return Decimal.log(this,base)
+		}
+		
 		static ln(value) {
-			return Decimal.log(value,Math.E)
+			value=new Decimal(value)
+			return value.logarithm*2.30258509299404568402
 		}
 		
 		ln() {
-			return Decimal.log(this,Math.E)
+			return Decimal.ln(this)
 		}
 		
 		static floor(value) {
 			value=new Decimal(value)
-			if (value.logarithm<0) value.logarithm=0
+			if (value.logarithm<0) value.logarithm=Number.NEGATIVE_INFINITY
 			else if (value.logarithm<15) value.logarithm=Math.log10(Math.floor(Math.pow(10,value.logarithm)))
 			return value
 		}
@@ -439,7 +554,7 @@
 			return Decimal.max(this,value)
 		}
 		
-		static compareTo(value1,value2) {
+		static cmp(value1,value2) {
 			value1=new Decimal(value1)
 			value2=new Decimal(value2)
 			if (value1.logarithm>value2.logarithm) return 1
@@ -448,7 +563,23 @@
 		}
 		
 		compareTo(value) {
-			return Decimal.compareTo(this,value)
+			return Decimal.cmp(this,value)
+		}
+		
+		static compare(value1,value2) {
+			return Decimal.cmp(value1,value2)
+		}
+		
+		compare(value) {
+			return Decimal.cmp(this,value)
+		}
+		
+		static compareTo(value1,value2) {
+			return Decimal.cmp(value1,value2)
+		}
+		
+		compareTo(value) {
+			return Decimal.cmp(this,value)
 		}
 		
 		static lt(value1,value2) {
@@ -481,6 +612,14 @@
 			return Decimal.eq(this,value)
 		}
 		
+		static equals(value1,value2) {
+			return Decimal.eq(value1,value2)
+		}
+		
+		equals(value) {
+			return Decimal.eq(this,value)
+		}
+		
 		static neq(value1,value2) {
 			value1=new Decimal(value1)
 			value2=new Decimal(value2)
@@ -488,6 +627,14 @@
 		}
 		
 		neq(value) {
+			return Decimal.neq(this,value)
+		}
+		
+		static notEquals(value1,value2) {
+			return Decimal.neq(value1,value2)
+		}
+		
+		notEquals(value) {
 			return Decimal.neq(this,value)
 		}
 		
