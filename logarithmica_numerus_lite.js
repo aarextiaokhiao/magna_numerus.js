@@ -8,8 +8,11 @@
 		This library uses Decimal which is expressed as 10^(logarithm). There is only a factor:
 		- Logarithm: The logarithm of the number.
 		
-		This version might be faster and less broken than IkerStreamer's logmath.js!
+		This version is way faster and less broken than IkerStreamer's logmath.js!
 		You can find his code by clicking the link: https://github.com/Ikerstreamer/RGB-Idle/blob/master/logmath.js
+		
+		It is also almost 2x faster than break_infinity.js!
+		If you want to use accuracy instead of performance, please use this library from the link: https://github.com/Patashu/break_infinity.js/blob/master/break_infinity.min.js
 	*/
 	class Decimal {
 		static fromValue(value) {
@@ -38,12 +41,6 @@
 		constructor(value) { 
 			var value=Decimal.fromValue(value)
 			this.logarithm=value.logarithm
-		}
-		
-		static constructValue(sign,logarithm) {
-			var value=new Decimal()
-			value.logarithm=logarithm
-			return value
 		}
 		
 		static toString(value) {
@@ -322,19 +319,23 @@
 		}
 		
 		static sqrt(value) {
-			return Decimal.root(value,2)
+			value=new Decimal(value)
+			value.logarithm=value.logarithm/2
+			return value
 		}
 		
 		sqrt() {
-			return Decimal.root(this,2)
+			return Decimal.sqrt(this)
 		}
 		
 		static cbrt(value) {
-			return Decimal.root(value,3)
+			value=new Decimal(value)
+			value.logarithm=value.logarithm/3
+			return value
 		}
 		
 		cbrt() {
-			return Decimal.root(this,3)
+			return Decimal.cbrt(this)
 		}
 		
 		static log10(value) {
