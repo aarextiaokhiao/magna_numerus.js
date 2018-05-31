@@ -71,16 +71,7 @@
 		}
 		
 		fromString() {
-			var findE=value.search('e')
-			if (findE==-1) {
-				value=parseFloat(value)
-				return {logarithm:Math.log10(value)}
-			}
-			var split=[value.slice(0,findE),value.slice(findE+1,value.length)]
-			split[1]=parseFloat(split[1])
-			if (split[0]=='') return {logarithm:split[1]}
-			split[0]=parseFloat(split[0])
-			return {logarithm:Math.log10(split[0])+split[1]}
+			return Decimal.fromString(this)
 		}
 		
 		static fromMantissaExponent(m,e) {
@@ -455,7 +446,7 @@
 		
 		static log10remainder(value) {
 			value=new Decimal(value)
-			return value.logarithm%1
+			return value.logarithm-Math.floor(value.logarithm)
 		}
 		
 		log10remainder() {
