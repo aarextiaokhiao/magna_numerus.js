@@ -492,7 +492,7 @@
 		static floor(value) {
 			value=new Decimal(value)
 			if (value.logarithm<0) value.logarithm=Number.NEGATIVE_INFINITY
-			else if (value.logarithm<15) value.logarithm=Math.log10(Math.floor(Math.pow(10,value.logarithm)))
+			else if (value.logarithm<15) value.logarithm=Math.log10(Math.floor(Math.pow(10,value.logarithm)+Math.pow(10,value.logarithm-14)))
 			return value
 		}
 		
@@ -504,7 +504,7 @@
 			value=new Decimal(value)
 			if (value.logarithm==Number.NEGATIVE_INFINITY) return value
 			else if (value.logarithm<0) value.logarithm=0
-			else if (value.logarithm<15) value.logarithm=Math.log10(Math.ceil(Math.pow(10,value.logarithm)))
+			else if (value.logarithm<15) value.logarithm=Math.log10(Math.ceil(Math.pow(10,value.logarithm)-Math.pow(10,value.logarithm-14)))
 			return value
 		}
 		
