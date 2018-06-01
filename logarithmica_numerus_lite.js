@@ -432,7 +432,7 @@
 		}
 		
 		log10() {
-			return Decimal.log10(this)
+			return this.logarithm
 		}
 		
 		static log10integer(value) {
@@ -459,7 +459,7 @@
 		}
 		
 		log2() {
-			return Decimal.log10(this)
+			return this.logarithm*3.32192809488736234787
 		}
 		
 		static log(value,base) {
@@ -486,7 +486,7 @@
 		}
 		
 		ln() {
-			return Decimal.ln(this)
+			return this.logarithm*2.30258509299404568402
 		}
 		
 		static floor(value) {
