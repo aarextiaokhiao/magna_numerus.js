@@ -77,6 +77,7 @@
 		static fromMantissaExponent(m,e) {
 			var value=new Decimal()
 			value.logarithm=e+Math.log10(m)
+			return value
 		}
 		
 		static toString(value) {
@@ -102,7 +103,7 @@
 		static toNumber(value) {
 			value=new Decimal(value)
 			if (value.logarithm>=309) return Number.POSITIVE_INFINITY
-			if (value.logarithm<=-324) return 0
+			if (value.logarithm<=-309) return 0
 			return Math.pow(10,value.logarithm)
 		}
 		
