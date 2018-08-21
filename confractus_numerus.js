@@ -342,7 +342,7 @@
 				else value2.logarithm=value2.logarithm+Math.log10(Math.pow(10,expdiff)%1)
 				return value2
 			}
-			if (Decimal.cmp(value1.logarithm,value2.logarithm)<0) value1.logarithm=Number.NEGATIVE_INFINITY
+			if (Decimal.cmp(value1.logarithm,value2.logarithm)>=0) value1.logarithm=Number.NEGATIVE_INFINITY
 			return value1
 		}
 		
@@ -896,10 +896,10 @@
 				var res=Math.pow(e,ep)
 				var hardCalc=false
 				if (res==Number.POSITIVE_INFINITY||res==Number.NEGATIVE_INFINITY) {
-					if (e1==Number.POSITIVE_INFINITY) {}
-					else if (e1==Number.NEGATIVE_INFINITY) {}
-					else if (e2==Number.POSITIVE_INFINITY) {}
-					else if (e2==Number.NEGATIVE_INFINITY) {}
+					if (e==Number.POSITIVE_INFINITY) {}
+					else if (e==Number.NEGATIVE_INFINITY) {}
+					else if (ep==Number.POSITIVE_INFINITY) {}
+					else if (ep==Number.NEGATIVE_INFINITY) {}
 					else hardCalc=true
 				}
 				if (hardCalc) return Decimal_BI.pow(e,ep)
