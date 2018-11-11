@@ -141,7 +141,7 @@
 				return 'e'+value.logarithm
 			}
 			if (value.logarithm>=21) {
-				return Math.pow(10,value.logarithm%1).toPrecision(dp)+'e'+Math.floor(value.logarithm)
+				return Math.pow(10,value.logarithm%1).toFixed(dp)+'e'+Math.floor(value.logarithm)
 			}
 			return Math.pow(10,value.logarithm).toFixed(dp)
 		}
