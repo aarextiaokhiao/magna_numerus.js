@@ -15,4 +15,4 @@ This library uses Decimal which is expressed as (mantissa)*10^(exponent). Here a
 - Mantissa uses float from 1 to 10 or 0 if the exponent was 0.
 - Exponent uses BigInteger in every single value up to 10^65536-1 away from the center.
 
-magna_numerus.min.js (compressed code for magna_numerus.min.js) and amplissimum_numerus.js (uses nested Decimal on exponents) is coming soon for your incremental games.
+magna_numerus.min.js (compressed code for magna_numerus.js) and amplissimum_numerus.js (uses nested Decimal on exponents) is coming soon for your incremental games.
