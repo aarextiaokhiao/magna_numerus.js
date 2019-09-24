@@ -8,650 +8,662 @@
 		This library uses Decimal which is expressed as 10^(logarithm). There is only a factor:
 		- Logarithm: The logarithm of the number.
 		
-		This version is way faster and less broken than IkerStreamer's logmath.js!
-		You can find his code by clicking the link: https://github.com/Ikerstreamer/RGB-Idle/blob/master/logmath.js
-		
 		It is also almost 2x faster than break_infinity.js!
 		If you want to use accuracy instead of performance, please use this library from the link: https://github.com/Patashu/break_infinity.js/blob/master/break_infinity.min.js
 	*/
 	class Decimal {
-		static fromValue(value) {
-			if (value==null) {
-				return {logarithm:Number.NEGATIVE_INFINITY}
-			} else if (value.logarithm!=undefined) {
-				return value
-			} else if (typeof(value)=='string') {
-				var findE=value.search('e')
+		static fromValue(v) {
+			return new Decimal(v)
+		}
+		
+		constructor(v) { 
+			if (v==null) {
+				this.l=Number.NEGATIVE_INFINITY
+			} else if (v instanceof Decimal) {
+				this.l=v.l
+			} else if (typeof(v)=='string') {
+				var findE=v.search('e')
 				if (findE==-1) {
-					value=parseFloat(value)
-					return {logarithm:Math.log10(value)}
+					v=parseFloat(v)
+					this.l=Math.log10(v)
+				} else {
+					var split=[v.slice(0,findE),v.slice(findE+1,v.length)]
+					split[1]=parseFloat(split[1])
+					if (split[0]=='') this.l=split[1]
+					else {
+						split[0]=parseFloat(split[0])
+						this.l=Math.log10(split[0])+split[1]
+					}
 				}
-				var split=[value.slice(0,findE),value.slice(findE+1,value.length)]
-				split[1]=parseFloat(split[1])
-				if (split[0]=='') return {logarithm:split[1]}
-				split[0]=parseFloat(split[0])
-				return {logarithm:Math.log10(split[0])+split[1]}
-			} else if (typeof(value)=='number') {
-				return {logarithm:Math.log10(value)}
+			} else if (typeof(v)=='number') {
+				this.l=Math.log10(v)
 			} else {
-				return {logarithm:Number.NEGATIVE_INFINITY}
+				this.l=Number.NEGATIVE_INFINITY
 			}
 		}
 		
-		constructor(value) { 
-			var value=Decimal.fromValue(value)
-			this.logarithm=value.logarithm
+		static fromNumber(v) {
+			var tmp=new Decimal()
+			tmp.l=Math.log10(v)
+			return tmp
 		}
 		
-		static fromNumber(value) {
-			var valueTemp=new Decimal()
-			valueTemp.logarithm=Math.log10(value)
-			return valueTemp
-		}
-		
-		fromNumber() {
-			return Decimal.fromNumber(this)
-		}
-		
-		static fromString(value) {
-			var valueTemp=new Decimal()
-			var findE=value.search('e')
+		static fromString(v) {
+			var tmp=new Decimal()
+			var findE=v.search('e')
 			if (findE==-1) {
-				value=parseFloat(value)
-				return {logarithm:Math.log10(value)}
+				v=parseFloat(v)
+				tmp.l=Math.log10(v)
+			} else {
+				var split=[v.slice(0,findE),v.slice(findE+1,v.length)]
+				split[1]=parseFloat(split[1])
+				if (split[0]=='') tmp.l=split[1]
+				else {
+					split[0]=parseFloat(split[0])
+					tmp.l=Math.log10(split[0])+split[1]
+				}
 			}
-			var split=[value.slice(0,findE),value.slice(findE+1,value.length)]
-			split[1]=parseFloat(split[1])
-			if (split[0]=='') valueTemp.logarithm=split[1]
-			else {
-				split[0]=parseFloat(split[0])
-				valueTemp.logarithm=Math.log10(split[0])+split[1]
-			}
-			return valueTemp
-		}
-		
-		fromString() {
-			return Decimal.fromString(this)
+			return tmp
 		}
 		
 		static fromMantissaExponent(m,e) {
-			var value=new Decimal()
-			value.logarithm=e+Math.log10(m)
-			return value
+			var v=new Decimal()
+			v.l=e+Math.log10(m)
+			return v
 		}
 		
-		static toString(value) {
-			value=new Decimal(value)
-			if (value.logarithm==Number.NEGATIVE_INFINITY) return '0'
-			if (value.logarithm==Number.POSITIVE_INFINITY) {
+		static fromMantissaExponent_noNormalize(m,e) {
+			return Decimal.fromMantissaExponent(m,e)
+		}
+		
+		static toString(v) {
+			v=new Decimal(v)
+			if (v.l==Number.NEGATIVE_INFINITY) return '0'
+			if (v.l==Number.POSITIVE_INFINITY) {
 				return 'Infinity'
 			}
-			if (value.logarithm>=1e21||value.logarithm<=-1e21) {
-				return 'e'+value.logarithm
+			if (v.l>=1e21||v.l<=-1e21) {
+				return 'e'+v.l
 			}
-			if (value.logarithm>=21||value.logarithm<-6) {
-				var logInt=Math.floor(value.logarithm)
-				return Math.pow(10,value.logarithm-logInt)+'e'+logInt
+			if (v.l>=21||v.l<-6) {
+				var logInt=Math.floor(v.l)
+				return Math.pow(10,v.l-logInt)+'e'+logInt
 			}
-			return Math.pow(10,value.logarithm).toString()
+			return Math.pow(10,v.l).toString()
 		}
 		
 		toString() {
 			return Decimal.toString(this)
 		}
 		
-		static toNumber(value) {
-			value=new Decimal(value)
-			if (value.logarithm>=309) return Number.POSITIVE_INFINITY
-			if (value.logarithm<=-309) return 0
-			return Math.pow(10,value.logarithm)
+		static toNumber(v) {
+			v=new Decimal(v)
+			if (v.l>=309) return Number.POSITIVE_INFINITY
+			if (v.l<=-309) return 0
+			return Math.pow(10,v.l)
 		}
 		
 		toNumber() {
 			return Decimal.toNumber(this)
 		}
 		
-		static toPrecision(value,dp) {
-			value=new Decimal(value)
-			if (value.logarithm==Number.NEGATIVE_INFINITY) return (0).toPrecision(dp)
-			if (value.logarithm==Number.POSITIVE_INFINITY) {
+		static toPrecision(v,dp) {
+			v=new Decimal(v)
+			if (v.l==Number.NEGATIVE_INFINITY) return (0).toPrecision(dp)
+			if (v.l==Number.POSITIVE_INFINITY) {
 				return 'Infinity'
 			}
-			if (value.logarithm>=1e21||value.logarithm<=-1e21) {
-				return 'e'+value.logarithm
+			if (v.l>=1e21||v.l<=-1e21) {
+				return 'e'+v.l
 			}
-			if (value.logarithm>=dp||value.logarithm<6) {
-				var logInt=Math.floor(value.logarithm)
-				return Math.pow(10,value.logarithm-logInt).toPrecision(dp)+'e'+logInt
+			if (v.l>=dp||v.l<6) {
+				var logInt=Math.floor(v.l)
+				return Math.pow(10,v.l-logInt).toPrecision(dp)+'e'+logInt
 			}
-			return Math.pow(10,value.logarithm).toPrecision(dp)
+			return Math.pow(10,v.l).toPrecision(dp)
 		}
 		
 		toPrecision(dp) {
 			return Decimal.toPrecision(this,dp)
 		}
 		
-		static toFixed(value,dp) {
-			value=new Decimal(value)
-			if (value.logarithm<-dp-1) return (0).toFixed(dp)
-			if (value.logarithm==Number.POSITIVE_INFINITY) {
+		static toFixed(v,dp) {
+			v=new Decimal(v)
+			if (v.l<-dp-1) return (0).toFixed(dp)
+			if (v.l==Number.POSITIVE_INFINITY) {
 				return 'Infinity'
 			}
-			if (value.logarithm>=1e21) {
-				return 'e'+value.logarithm
+			if (v.l>=1e21) {
+				return 'e'+v.l
 			}
-			if (value.logarithm>=21) {
-				return Math.pow(10,value.logarithm%1).toFixed(dp)+'e'+Math.floor(value.logarithm)
+			if (v.l>=21) {
+				return Math.pow(10,v.l%1).toFixed(dp)+'e'+Math.floor(v.l)
 			}
-			return Math.pow(10,value.logarithm).toFixed(dp)
+			return Math.pow(10,v.l).toFixed(dp)
 		}
 		
 		toFixed(dp) {
 			return Decimal.toFixed(this,dp)
 		}
 		
-		static toExponential(value,dp) {
-			value=new Decimal(value)
-			if (value.logarithm==Number.NEGATIVE_INFINITY) return (0).toExponential(dp)
-			if (value.logarithm==Number.POSITIVE_INFINITY) {
+		static toExponential(v,dp) {
+			v=new Decimal(v)
+			if (v.l==Number.NEGATIVE_INFINITY) return (0).toExponential(dp)
+			if (v.l==Number.POSITIVE_INFINITY) {
 				return 'Infinity'
 			}
-			if (value.logarithm>=1e21||value.logarithm<=-1e21) {
-				return 'e'+value.logarithm
+			if (v.l>=1e21||v.l<=-1e21) {
+				return 'e'+v.l
 			}
-			var logInt=Math.floor(value.logarithm)
-			return Math.pow(10,value.logarithm-logInt).toFixed(dp)+'e'+logInt
+			var logInt=Math.floor(v.l)
+			return Math.pow(10,v.l-logInt).toFixed(dp)+'e'+logInt
 		}
 		
 		toExponential(dp) {
 			return Decimal.toExponential(this,dp)
 		}
 		
-		static add(value1,value2) {
-			value1=new Decimal(value1)
-			value2=new Decimal(value2)
-			var expdiff=value1.logarithm-value2.logarithm
-			if (expdiff>=15||value2.logarithm==Number.NEGATIVE_INFINITY) return value1
-			if (expdiff<=-15||value1.logarithm==Number.NEGATIVE_INFINITY) return value2
-			value2.logarithm=value2.logarithm+Math.log10(1+Math.pow(10,expdiff))
-			return value2
+		static add(v1,v2) {
+			v1=new Decimal(v1)
+			v2=new Decimal(v2)
+			var expdiff=v1.l-v2.l
+			if (expdiff>=15||v2.l==Number.NEGATIVE_INFINITY) return v1
+			if (expdiff<=-15||v1.l==Number.NEGATIVE_INFINITY) return v2
+			v2.l=v2.l+Math.log10(1+Math.pow(10,expdiff))
+			return v2
 		}
 		
-		add(value) {
-			return Decimal.add(this,value)
+		add(v) {
+			return Decimal.add(this,v)
 		}
 		
-		static plus(value1,value2) {
-			return Decimal.add(value1,value2)
+		static plus(v1,v2) {
+			return Decimal.add(v1,v2)
 		}
 		
-		plus(value) {
-			return Decimal.add(this,value)
+		plus(v) {
+			return Decimal.add(this,v)
 		}
 		
-		static sub(value1,value2) {
-			value1=new Decimal(value1)
-			value2=new Decimal(value2)
-			var expdiff=value1.logarithm-value2.logarithm
-			if (expdiff>=15||value2.logarithm==Number.NEGATIVE_INFINITY) return value1
-			value1.logarithm=value1.logarithm+Math.log10(1-Math.pow(10,-expdiff))
-			return value1
+		static sub(v1,v2) {
+			v1=new Decimal(v1)
+			v2=new Decimal(v2)
+			var expdiff=v1.l-v2.l
+			if (expdiff<0) {
+				v1.l=Number.NEGATIVE_INFINITY
+				return v1
+			}
+			if (expdiff>=15||v2.l==Number.NEGATIVE_INFINITY) return v1
+			v1.l=v1.l+Math.log10(1-Math.pow(10,-expdiff))
+			return v1
 		}
 		
-		sub(value) {
-			return Decimal.sub(this,value)
+		sub(v) {
+			return Decimal.sub(this,v)
 		}
 		
-		static subtract(value1,value2) {
-			return Decimal.sub(value1,value2)
+		static subtract(v1,v2) {
+			return Decimal.sub(v1,v2)
 		}
 		
-		subtract(value) {
-			return Decimal.sub(this,value)
+		subtract(v) {
+			return Decimal.sub(this,v)
 		}
 		
-		static minus(value1,value2) {
-			return Decimal.sub(value1,value2)
+		static minus(v1,v2) {
+			return Decimal.sub(v1,v2)
 		}
 		
-		minus(value) {
-			return Decimal.sub(this,value)
+		minus(v) {
+			return Decimal.sub(this,v)
 		}
 		
-		static mul(value1,value2) {
-			value1=new Decimal(value1)
-			value2=new Decimal(value2)
-			value1.logarithm=value1.logarithm+value2.logarithm
-			return value1
+		static mul(v1,v2) {
+			v1=new Decimal(v1)
+			v2=new Decimal(v2)
+			v1.l=v1.l+v2.l
+			return v1
 		}
 		
-		mul(value) {
-			return Decimal.mul(this,value)
+		mul(v) {
+			return Decimal.mul(this,v)
 		}
 		
-		static multiply(value1,value2) {
-			return Decimal.mul(value1,value2)
+		static multiply(v1,v2) {
+			return Decimal.mul(v1,v2)
 		}
 		
-		multiply(value) {
-			return Decimal.mul(this,value)
+		multiply(v) {
+			return Decimal.mul(this,v)
 		}
 		
-		static times(value1,value2) {
-			return Decimal.mul(value1,value2)
+		static times(v1,v2) {
+			return Decimal.mul(v1,v2)
 		}
 		
-		times(value) {
-			return Decimal.mul(this,value)
+		times(v) {
+			return Decimal.mul(this,v)
 		}
 		
-		static div(value1,value2) {
-			value1=new Decimal(value1)
-			value2=new Decimal(value2)
-			value1.logarithm=value1.logarithm-value2.logarithm
-			return value1
+		static div(v1,v2) {
+			v1=new Decimal(v1)
+			v2=new Decimal(v2)
+			if ((v1.l==Number.POSITIVE_INFINITY||v1.l==Number.NEGATIVE_INFINITY)&&v2.l==v1.l) {
+				v1.l=Number.NEGATIVE_INFINITY
+				return v1
+			}
+			v1.l=v1.l-v2.l
+			return v1
 		}
 		
-		div(value) {
-			return Decimal.div(this,value)
+		div(v) {
+			return Decimal.div(this,v)
 		}
 		
-		static divide(value1,value2) {
-			return Decimal.div(value1,value2)
+		static divide(v1,v2) {
+			return Decimal.div(v1,v2)
 		}
 		
-		divide(value) {
-			return Decimal.div(this,value)
+		divide(v) {
+			return Decimal.div(this,v)
 		}
 		
-		static divideBy(value1,value2) {
-			return Decimal.div(value1,value2)
+		static divideBy(v1,v2) {
+			return Decimal.div(v1,v2)
 		}
 		
-		divideBy(value) {
-			return Decimal.div(this,value)
+		divideBy(v) {
+			return Decimal.div(this,v)
 		}
 		
-		static dividedBy(value1,value2) {
-			return Decimal.div(value1,value2)
+		static dividedBy(v1,v2) {
+			return Decimal.div(v1,v2)
 		}
 		
-		dividedBy(value) {
-			return Decimal.div(this,value)
+		dividedBy(v) {
+			return Decimal.div(this,v)
 		}
 		
-		static recip(value) {
-			value=new Decimal(value)
-			value.logarithm=-value.logarithm
-			return value
+		static recip(v) {
+			v=new Decimal(v)
+			v.l=-v.l
+			return v
 		}
 		
 		recip() {
 			return Decimal.recip(this)
 		}
 		
-		static reciprocal(value) {
-			return Decimal.recip(value)
+		static reciprocal(v) {
+			return Decimal.recip(v)
 		}
 		
 		reciprocal() {
 			return Decimal.recip(this)
 		}
 		
-		static reciprocate(value) {
-			return Decimal.recip(value)
+		static reciprocate(v) {
+			return Decimal.recip(v)
 		}
 		
 		reciprocate() {
 			return Decimal.recip(this)
 		}
 		
-		static mod(value1,value2) {
-			value1=new Decimal(value1)
-			value2=new Decimal(value2)
-			var expdiff=value1.logarithm-value2.logarithm
-			if (expdiff<0) return value1
-			if (expdiff>=15) value2.logarithm=Number.NEGATIVE_INFINITY
-			else value2.logarithm=value2.logarithm+Math.log10(Math.pow(10,expdiff)%1)
-			return value2
+		static mod(v1,v2) {
+			v1=new Decimal(v1)
+			v2=new Decimal(v2)
+			if ((v1.l==Number.POSITIVE_INFINITY||v1.l==Number.NEGATIVE_INFINITY)&&v2.l==v1.l) {
+				v1.l=Number.NEGATIVE_INFINITY
+				return v1
+			}
+			var expdiff=v1.l-v2.l
+			if (expdiff<0) return v1
+			if (expdiff>=15) v2.l=Number.NEGATIVE_INFINITY
+			else v2.l=v2.l+Math.log10(Math.pow(10,expdiff)%1)
+			return v2
 		}
 		
-		mod(value) {
-			return Decimal.mod(this,value)
+		mod(v) {
+			return Decimal.mod(this,v)
 		}
 		
-		static remainder(value1,value2) {
-			return Decimal.mod(value1,value2)
+		static remainder(v1,v2) {
+			return Decimal.mod(v1,v2)
 		}
 		
-		remainder(value) {
-			return Decimal.mod(this,value)
+		remainder(v) {
+			return Decimal.mod(this,v)
 		}
 		
-		static pow(value,power) {
-			value=new Decimal(value)
-			value.logarithm=value.logarithm*power
-			return value
+		static pow(v,power) {
+			v=new Decimal(v)
+			v.l=v.l*power
+			return v
 		}
 		
-		pow(value) {
-			return Decimal.pow(this,value)
+		pow(v) {
+			return Decimal.pow(this,v)
 		}
 		
-		static power(value,power) {
-			return Decimal.pow(value,power)
+		static power(v,power) {
+			return Decimal.pow(v,power)
 		}
 		
-		power(value) {
-			return Decimal.pow(this,value)
+		power(v) {
+			return Decimal.pow(this,v)
 		}
 		
-		pow_base(value) {
-			return Decimal.pow(value,this)
+		pow_b(v) {
+			return Decimal.pow(v,this)
 		}
 		
-		static sqr(value) {
-			value=new Decimal(value)
-			value.logarithm=value.logarithm*2
-			return value
+		static sqr(v) {
+			v=new Decimal(v)
+			v.l=v.l*2
+			return v
 		}
 		
 		sqr() {
 			return Decimal.square(this)
 		}
 		
-		static square(value) {
-			return Decimal.sqr(value)
+		static square(v) {
+			return Decimal.sqr(v)
 		}
 		
 		square() {
 			return Decimal.sqr(this)
 		}
 		
-		static cub(value) {
-			value=new Decimal(value)
-			value.logarithm=value.logarithm*3
-			return value
+		static cub(v) {
+			v=new Decimal(v)
+			v.l=v.l*3
+			return v
 		}
 		
 		cub() {
 			return Decimal.cube(this)
 		}
 		
-		static cube(value) {
-			return Decimal.cub(value)
+		static cube(v) {
+			return Decimal.cub(v)
 		}
 		
 		cube() {
 			return Decimal.cub(this)
 		}
 		
-		static exp(value) {
-			value=new Decimal(value)
-			value.logarithm=value.logarithm*Math.log10(Math.E)
-			return value
+		static exp(v) {
+			v=new Decimal(v)
+			v.l=v.l*Math.log10(Math.E)
+			return v
 		}
 		
 		exp() {
 			return Decimal.exp(this)
 		}
 		
-		static root(value,power) {
-			value=new Decimal(value)
-			value.logarithm=value.logarithm/power
-			return value
+		static root(v,power) {
+			v=new Decimal(v)
+			v.l=v.l/power
+			return v
 		}
 		
-		root(value) {
-			return Decimal.root(this,value)
+		root(v) {
+			return Decimal.root(this,v)
 		}
 		
-		static sqrt(value) {
-			value=new Decimal(value)
-			value.logarithm=value.logarithm/2
-			return value
+		static sqrt(v) {
+			v=new Decimal(v)
+			v.l=v.l/2
+			return v
 		}
 		
 		sqrt() {
 			return Decimal.sqrt(this)
 		}
 		
-		static cbrt(value) {
-			value=new Decimal(value)
-			value.logarithm=value.logarithm/3
-			return value
+		static cbrt(v) {
+			v=new Decimal(v)
+			v.l=v.l/3
+			return v
 		}
 		
 		cbrt() {
 			return Decimal.cbrt(this)
 		}
 		
-		static log10(value) {
-			value=new Decimal(value)
-			return value.logarithm
+		static log10(v) {
+			v=new Decimal(v)
+			return v.l
 		}
 		
 		log10() {
-			return this.logarithm
+			return this.l
 		}
 		
-		static log10integer(value) {
-			value=new Decimal(value)
-			return Math.floor(value.logarithm)
+		static log10integer(v) {
+			v=new Decimal(v)
+			return Math.floor(v.l)
 		}
 		
 		log10integer() {
 			return Decimal.log10integer(this)
 		}
 		
-		static log10remainder(value) {
-			value=new Decimal(value)
-			return value.logarithm-Math.floor(value.logarithm)
+		static log10remainder(v) {
+			v=new Decimal(v)
+			return v.l-Math.floor(v.l)
 		}
 		
 		log10remainder() {
 			return Decimal.log10remainder(this)
 		}
 		
-		static log2(value) {
-			value=new Decimal(value)
-			return value.logarithm*3.32192809488736234787
+		static log2(v) {
+			v=new Decimal(v)
+			if (v.l >= 5.411595565927716e+307) {
+				v.l = Math.log10(v.l) + Math.log10(3.32192809488736234787)
+				return v
+			}
+			return v.l*3.32192809488736234787
 		}
 		
 		log2() {
-			return this.logarithm*3.32192809488736234787
+			return Decimal.log2(this)
 		}
 		
-		static log(value,base) {
-			value=new Decimal(value)
-			base=new Decimal(base)
-			return value.logarithm/base.logarithm
+		static log(v,b) {
+			v=new Decimal(v)
+			b=new Decimal(b)
+			return v.l/b.l
 		}
 		
-		log(base) {
-			return Decimal.log(this,base)
+		log(b) {
+			return Decimal.log(this,b)
 		}
 		
-		static logarithm(value,base) {
-			return Decimal.log(value,base)
+		static l(v,b) {
+			return Decimal.log(v,b)
 		}
 		
-		logarithm(base) {
-			return Decimal.log(this,base)
+		l(b) {
+			return Decimal.log(this,b)
 		}
 		
-		static ln(value) {
-			value=new Decimal(value)
-			return value.logarithm*2.30258509299404568402
+		static ln(v) {
+			v=new Decimal(v)
+			return v.l*2.30258509299404568402
 		}
 		
 		ln() {
-			return this.logarithm*2.30258509299404568402
+			return this.l*2.30258509299404568402
 		}
 		
-		static floor(value) {
-			value=new Decimal(value)
-			if (value.logarithm<0) value.logarithm=Number.NEGATIVE_INFINITY
-			else if (value.logarithm<15) value.logarithm=Math.log10(Math.floor(Math.pow(10,value.logarithm)+Math.pow(10,value.logarithm-14)))
-			return value
+		static floor(v) {
+			v=new Decimal(v)
+			if (v.l<0) v.l=Number.NEGATIVE_INFINITY
+			else if (v.l<15) v.l=Math.log10(Math.floor(Math.pow(10,v.l)+Math.pow(10,v.l-14)))
+			return v
 		}
 		
 		floor() {
 			return Decimal.floor(this)
 		}
 		
-		static ceil(value) {
-			value=new Decimal(value)
-			if (value.logarithm==Number.NEGATIVE_INFINITY) return value
-			else if (value.logarithm<0) value.logarithm=0
-			else if (value.logarithm<15) value.logarithm=Math.log10(Math.ceil(Math.pow(10,value.logarithm)-Math.pow(10,value.logarithm-14)))
-			return value
+		static ceil(v) {
+			v=new Decimal(v)
+			if (v.l==Number.NEGATIVE_INFINITY) return v
+			else if (v.l<0) v.l=0
+			else if (v.l<15) v.l=Math.log10(Math.ceil(Math.pow(10,v.l)-Math.pow(10,v.l-14)))
+			return v
 		}
 		
 		ceil() {
 			return Decimal.ceil(this)
 		}
 		
-		static round(value) {
-			value=new Decimal(value)
-			if (value.logarithm<=-1) value.logarithm=Number.NEGATIVE_INFINITY
-			else if (value.logarithm<15) value.logarithm=Math.log10(Math.round(Math.pow(10,value.logarithm)))
-			return value
+		static round(v) {
+			v=new Decimal(v)
+			if (v.l<=-1) v.l=Number.NEGATIVE_INFINITY
+			else if (v.l<15) v.l=Math.log10(Math.round(Math.pow(10,v.l)))
+			return v
 		}
 		
 		round() {
 			return Decimal.round(this)
 		}
 		
-		static min(value1,value2) {
-			value1=new Decimal(value1)
-			value2=new Decimal(value2)
-			if (value1.logarithm>value2.logarithm) return value2
-			return value1
+		static min(v1,v2) {
+			v1=new Decimal(v1)
+			v2=new Decimal(v2)
+			if (v1.l>v2.l) return v2
+			return v1
 		}
 		
-		min(value) {
-			return Decimal.min(this,value)
+		min(v) {
+			return Decimal.min(this,v)
 		}
 		
-		static max(value1,value2) {
-			value1=new Decimal(value1)
-			value2=new Decimal(value2)
-			if (value1.logarithm>value2.logarithm) return value1
-			return value2
+		static max(v1,v2) {
+			v1=new Decimal(v1)
+			v2=new Decimal(v2)
+			if (v1.l>v2.l) return v1
+			return v2
 		}
 		
-		max(value) {
-			return Decimal.max(this,value)
+		max(v) {
+			return Decimal.max(this,v)
 		}
 		
-		static cmp(value1,value2) {
-			value1=new Decimal(value1)
-			value2=new Decimal(value2)
-			if (value1.logarithm>value2.logarithm) return 1
-			if (value1.logarithm<value2.logarithm) return -1
+		static cmp(v1,v2) {
+			v1=new Decimal(v1)
+			v2=new Decimal(v2)
+			if (v1.l>v2.l) return 1
+			if (v1.l<v2.l) return -1
 			return 0
 		}
 		
-		compareTo(value) {
-			return Decimal.cmp(this,value)
+		compareTo(v) {
+			return Decimal.cmp(this,v)
 		}
 		
-		static compare(value1,value2) {
-			return Decimal.cmp(value1,value2)
+		static compare(v1,v2) {
+			return Decimal.cmp(v1,v2)
 		}
 		
-		compare(value) {
-			return Decimal.cmp(this,value)
+		compare(v) {
+			return Decimal.cmp(this,v)
 		}
 		
-		static compareTo(value1,value2) {
-			return Decimal.cmp(value1,value2)
+		static compareTo(v1,v2) {
+			return Decimal.cmp(v1,v2)
 		}
 		
-		compareTo(value) {
-			return Decimal.cmp(this,value)
+		compareTo(v) {
+			return Decimal.cmp(this,v)
 		}
 		
-		static lt(value1,value2) {
-			value1=new Decimal(value1)
-			value2=new Decimal(value2)
-			return value1.logarithm<value2.logarithm
+		static lt(v1,v2) {
+			v1=new Decimal(v1)
+			v2=new Decimal(v2)
+			return v1.l<v2.l
 		}
 		
-		lt(value) {
-			return Decimal.lt(this,value)
+		lt(v) {
+			return Decimal.lt(this,v)
 		}
 		
-		static lte(value1,value2) {
-			value1=new Decimal(value1)
-			value2=new Decimal(value2)
-			return value1.logarithm<=value2.logarithm
+		static lte(v1,v2) {
+			v1=new Decimal(v1)
+			v2=new Decimal(v2)
+			return v1.l<=v2.l
 		}
 		
-		lte(value) {
-			return Decimal.lte(this,value)
+		lte(v) {
+			return Decimal.lte(this,v)
 		}
 		
-		static eq(value1,value2) {
-			value1=new Decimal(value1)
-			value2=new Decimal(value2)
-			return value1.logarithm==value2.logarithm
+		static eq(v1,v2) {
+			v1=new Decimal(v1)
+			v2=new Decimal(v2)
+			return v1.l==v2.l
 		}
 		
-		eq(value) {
-			return Decimal.eq(this,value)
+		eq(v) {
+			return Decimal.eq(this,v)
 		}
 		
-		static equals(value1,value2) {
-			return Decimal.eq(value1,value2)
+		static equals(v1,v2) {
+			return Decimal.eq(v1,v2)
 		}
 		
-		equals(value) {
-			return Decimal.eq(this,value)
+		equals(v) {
+			return Decimal.eq(this,v)
 		}
 		
-		static neq(value1,value2) {
-			value1=new Decimal(value1)
-			value2=new Decimal(value2)
-			return value1.logarithm!=value2.logarithm
+		static neq(v1,v2) {
+			v1=new Decimal(v1)
+			v2=new Decimal(v2)
+			return v1.l!=v2.l
 		}
 		
-		neq(value) {
-			return Decimal.neq(this,value)
+		neq(v) {
+			return Decimal.neq(this,v)
 		}
 		
-		static notEquals(value1,value2) {
-			return Decimal.neq(value1,value2)
+		static notEquals(v1,v2) {
+			return Decimal.neq(v1,v2)
 		}
 		
-		notEquals(value) {
-			return Decimal.neq(this,value)
+		notEquals(v) {
+			return Decimal.neq(this,v)
 		}
 		
-		static gte(value1,value2) {
-			value1=new Decimal(value1)
-			value2=new Decimal(value2)
-			return value1.logarithm>=value2.logarithm
+		static gte(v1,v2) {
+			v1=new Decimal(v1)
+			v2=new Decimal(v2)
+			return v1.l>=v2.l
 		}
 		
-		gte(value) {
-			return Decimal.gte(this,value)
+		gte(v) {
+			return Decimal.gte(this,v)
 		}
 		
-		static gt(value1,value2) {
-			value1=new Decimal(value1)
-			value2=new Decimal(value2)
-			return value1.logarithm>value2.logarithm
+		static gt(v1,v2) {
+			v1=new Decimal(v1)
+			v2=new Decimal(v2)
+			return v1.l>v2.l
 		}
 		
-		gt(value) {
-			return Decimal.gt(this,value)
+		gt(v) {
+			return Decimal.gt(this,v)
 		}
 		
-		static isFinite(value) {
-			value=new Decimal(value)
-			return value.logarithm<Number.POSITIVE_INFINITY
+		static isFinite(v) {
+			v=new Decimal(v)
+			return v.l<Number.POSITIVE_INFINITY
 		}
 		
 		isFinite() {
@@ -659,23 +671,24 @@
 		}
 		
 		get mantissaAndExponent() {
-			if (this.logarithm==Number.NEGATIVE_INFINITY) return {m:0,e:0}
-			var logInt=Math.floor(this.logarithm)
-			return {m:Math.pow(10,this.logarithm-logInt),e:logInt}
+			if (this.l==Number.NEGATIVE_INFINITY) return {m:0,e:0}
+			var logInt=Math.floor(this.l)
+			return {m:Math.pow(10,this.l-logInt),e:logInt}
 		}
 		get e() {
-			if (this.logarithm==Number.NEGATIVE_INFINITY) return 0
-			return Math.floor(this.logarithm)
+			if (this.l==Number.NEGATIVE_INFINITY) return 0
+			return Math.floor(this.l)
 		}
 		get exponent() {return this.e;}
 		get m() {
-			if (this.logarithm==Number.NEGATIVE_INFINITY) return 0
-			var logInt=Math.floor(this.logarithm)
-			return Math.pow(10,this.logarithm-logInt)
+			if (this.l==Number.NEGATIVE_INFINITY) return 0
+			var logInt=Math.floor(this.l)
+			return Math.pow(10,this.l-logInt)
 		}
 		get mantissa() {return this.m;}
+		get logarithm() {return this.l;}
 		
-		valueOf() { return this.toString(); }
+		vOf() { return this.toString(); }
 		toJSON() { return this.toString(); }
 	}
 	
