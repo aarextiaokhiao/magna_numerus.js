@@ -22,18 +22,15 @@
 			} else if (v instanceof Decimal) {
 				this.l=v.l
 			} else if (typeof(v)=='string') {
-				var findE=v.search('e')
+				var findE=v.indexOf('e')
 				if (findE==-1) {
-					v=parseFloat(v)
 					this.l=Math.log10(v)
+				} else if (findE==0) {
+					this.l=Number(v.slice(1,v.length))
 				} else {
 					var split=[v.slice(0,findE),v.slice(findE+1,v.length)]
-					split[1]=parseFloat(split[1])
-					if (split[0]=='') this.l=split[1]
-					else {
-						split[0]=parseFloat(split[0])
-						this.l=Math.log10(split[0])+split[1]
-					}
+					if (split[0]==1) this.l=Number(split[1])
+					else this.l=Number(split[1])+Math.log10(split[0])
 				}
 			} else if (typeof(v)=='number') {
 				this.l=Math.log10(v)
@@ -50,18 +47,15 @@
 		
 		static fromString(v) {
 			var tmp=new Decimal()
-			var findE=v.search('e')
+			var findE=v.indexOf('e')
 			if (findE==-1) {
-				v=parseFloat(v)
 				tmp.l=Math.log10(v)
+			} else if (findE==0) {
+				tmp.l=Number(v.slice(1,v.length))
 			} else {
 				var split=[v.slice(0,findE),v.slice(findE+1,v.length)]
-				split[1]=parseFloat(split[1])
-				if (split[0]=='') tmp.l=split[1]
-				else {
-					split[0]=parseFloat(split[0])
-					tmp.l=Math.log10(split[0])+split[1]
-				}
+				if (split[0]==1) tmp.l=Number(split[1])
+				else tmp.l=Math.log10(split[0])+split[1]
 			}
 			return tmp
 		}
@@ -137,7 +131,8 @@
 				return 'e'+v.l
 			}
 			if (v.l>=21) {
-				return Math.pow(10,v.l%1).toFixed(dp)+'e'+Math.floor(v.l)
+				var logInt=Math.floor(v.l)
+				return Math.pow(10,v.l-logInt).toFixed(dp)+'e'+Math.floor(v.l)
 			}
 			return Math.pow(10,v.l).toFixed(dp)
 		}
@@ -319,8 +314,13 @@
 			}
 			var expdiff=v1.l-v2.l
 			if (expdiff<0) return v1
-			if (expdiff>=15) v2.l=Number.NEGATIVE_INFINITY
-			else v2.l=v2.l+Math.log10(Math.pow(10,expdiff)%1)
+			if (expdiff>=15||expdiff==0) v2.l=Number.NEGATIVE_INFINITY
+			else {
+				var mod=Math.pow(10,expdiff)
+				var modInt=Math.floor(mod)
+				if (mod==modInt) v2.l=Number.NEGATIVE_INFINITY
+				else v2.l=v2.l+Math.log10(mod-modInt)
+			}
 			return v2
 		}
 		
